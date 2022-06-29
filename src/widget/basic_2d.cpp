@@ -1,6 +1,5 @@
 #include <cstdlib>
 #include <engine.hpp>
-#include <glm/detail/qualifier.hpp>
 #include <string>
 #include <type_traits>
 #include <widgets/basic_2d.hpp>

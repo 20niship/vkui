@@ -47,8 +47,16 @@ target_link_libraries(vkengine PUBLIC
   ${CMAKE_DL_LIBS}
 )
 
-set(ALL_LINKS ${ALL_LINKS} vkengine) 
-
+set(ALL_LINKS 
+  ${ALL_LINKS} 
+  vkengine
+  glfw
+  OpenGL::GL
+  ${Vulkan_LIBRARIES}
+  ${CMAKE_DL_LIBS}
+  ${FREETYPE_LIBRARIES}
+  ${GLFW_LIBRARY_DIRS}
+)
 file(GLOB DATA_FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/*)
 file(COPY ${DATA_FILES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/..")
 

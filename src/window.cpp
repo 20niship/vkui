@@ -1,6 +1,5 @@
 #include "../include/engine.hpp"
 #include "opencv2/core/mat.hpp"
-#include <glm/fwd.hpp>
 #include <time.h>     
 #include <iostream>
 #include <iomanip>
