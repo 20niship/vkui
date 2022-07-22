@@ -1,324 +1,349 @@
 #include "../include/engine.hpp"
 #include <libintl.h>
-namespace vkUI::Engine{
+namespace vkUI::Engine {
 
 // -----------------------------------------------------
 //    [SECTION] uiFont
 // -----------------------------------------------------
-void uiFont::AddGlyph(uiWchar c, float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, float advance_x){}
-void uiFont::AddRemapChar(uiWchar dst, uiWchar src, bool overwrite_dst){}
-void uiFont::SetGlyphVisible(uiWchar c, bool visible){}
-bool uiFont::IsGlyphRangeUnused(unsigned int c_begin, unsigned int c_last){return true;}
+void uiFont::AddGlyph(uiWchar c, float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, float advance_x) {}
+void uiFont::AddRemapChar(uiWchar dst, uiWchar src, bool overwrite_dst) {}
+void uiFont::SetGlyphVisible(uiWchar c, bool visible) {}
+bool uiFont::IsGlyphRangeUnused(unsigned int c_begin, unsigned int c_last) {
+  return true;
+}
 
 constexpr uiWchar _FallbackGlyphNumber = 0x0030;
 
-uiWchar* uiFont::GetGlyphRangesKorean(){return nullptr;}
-uiWchar* uiFont::GetGlyphRangesChinese(){return nullptr;}
-uiWchar* uiFont::GetGlyphRangesCyrillic(){return nullptr;}
-uiWchar* uiFont::GetGlyphRangesThai(){return nullptr;}
-uiWchar* uiFont::GetGlyphRangesVietnamese(){return nullptr;}
-
-uiWchar* uiFont::GetGlyphRangesJapanese(){
-    static uiWchar ranges[] = {
-        #include "../data/font/Glyphs/GlyphRange_JPN.csv"
-         _FallbackGlyphNumber,
-    };
-    nGlyph = sizeof(ranges) / sizeof(uiWchar);
-    disp(nGlyph);
-    return ranges;
+uiWchar* uiFont::GetGlyphRangesKorean() {
+  return nullptr;
+}
+uiWchar* uiFont::GetGlyphRangesChinese() {
+  return nullptr;
+}
+uiWchar* uiFont::GetGlyphRangesCyrillic() {
+  return nullptr;
+}
+uiWchar* uiFont::GetGlyphRangesThai() {
+  return nullptr;
+}
+uiWchar* uiFont::GetGlyphRangesVietnamese() {
+  return nullptr;
 }
 
-uiWchar* uiFont::GetGlyphRangesEnglish(){
-    static uiWchar ranges[] = {
-        #include "../data/font/Glyphs/GlyphRange_ENG.csv"
-        _FallbackGlyphNumber,
-    };
-    nGlyph = sizeof(ranges) / sizeof(uiWchar);
-    return ranges;
+uiWchar* uiFont::GetGlyphRangesJapanese() {
+  static uiWchar ranges[] = {
+#include "../data/font/Glyphs/GlyphRange_JPN.csv"
+    _FallbackGlyphNumber,
+  };
+  nGlyph = sizeof(ranges) / sizeof(uiWchar);
+  disp(nGlyph);
+  return ranges;
 }
 
-uiFont::uiFont():TexWidth(0),
-                TexHeight(0),
-                isBuildFinished(false),
-                _Data(nullptr){ 
-    init();
+uiWchar* uiFont::getGlyphRangeIcon() {
+  static uiWchar ranges[] = {
+#include "../data/font/Glyphs/Icon.csv"
+  };
+  nIconGlyphGlyph = sizeof(ranges) / sizeof(uiWchar);
+  return ranges;
+}
+
+uiWchar* uiFont::GetGlyphRangesEnglish() {
+  static uiWchar ranges[] = {
+#include "../data/font/Glyphs/GlyphRange_ENG.csv"
+    _FallbackGlyphNumber,
+  };
+  nGlyph = sizeof(ranges) / sizeof(uiWchar);
+  return ranges;
+}
+
+uiFont::uiFont() : TexWidth(0), TexHeight(0), isBuildFinished(false), _Data(nullptr) {
+  init();
 }
 
 
-uiFont::~uiFont(){
-    if(_Data != nullptr) free(_Data);
-    FT_Done_Face    ( face );
-    FT_Done_FreeType( library );
-    TexWidth = 0; TexHeight = 0;
-    // if (FallbackGlyph != nullptr) free(FallbackGlyph);
-    isBuildFinished = false;
-    IndexLookup.clear();
-    Glyphs.clear();
+uiFont::~uiFont() {
+  if(_Data != nullptr) free(_Data);
+  FT_Done_Face(face);
+  FT_Done_FreeType(library);
+  TexWidth = 0;
+  TexHeight = 0;
+  // if (FallbackGlyph != nullptr) free(FallbackGlyph);
+  isBuildFinished = false;
+  IndexLookup.clear();
+  Glyphs.clear();
 }
 
 
-void uiFont::init(){
-    std::cout << "init uiFont" << std::endl;
+void uiFont::init() {
+  std::cout << "init uiFont" << std::endl;
+  TexWidth = 0;
+  TexHeight = 0;
+  isBuildFinished = false;
+
+  if(_Data != nullptr) free(_Data);
+  _Data = nullptr;
+
+  IndexLookup.clear();
+  Glyphs.clear();
+
+  IconGlyphRanges = getGlyphRangeIcon();
+
+  setFontSize(16.0f);
+  setFontName("../font/Meiryo.ttf");
+  setIconFontName("../font/MelsoLGS.ttf");
+  setFontSpacing(2.0f);
+}
+
+bool uiFont::setLanguage(FontLanguage l) {
+  // static uiWchar *glyphrange_tmp = nullptr;
+  switch(l) {
+    case FontLanguage::Japansese: GlyphRanges = GetGlyphRangesJapanese(); break;
+    case FontLanguage::Chinese: GlyphRanges = GetGlyphRangesChinese(); break;
+    case FontLanguage::English: GlyphRanges = GetGlyphRangesEnglish(); break;
+    case FontLanguage::Korean: GlyphRanges = GetGlyphRangesKorean(); break;
+    default: return false;
+  }
+  return true;
+}
+
+// #undef RENDER_FONT_UNPACK_ALIGNMENT //
+//
+
+
+bool uiFont::build_internal(const std::string &fontname, const int fontsize, const uiWchar *GLyphRange, const int N){
+  FT_Error error, error2;
+  unsigned int TexCapacityHeight = 128;
+
+  { //フォントレンダリングエンジンの初期化
+    desiredTextSize = (2048 > GL_MAX_TEXTURE_SIZE) ? int(std::pow(2, int(log2(GL_MAX_TEXTURE_SIZE)))) : 2048;
+    std::cout << "desired texture width = " << desiredTextSize << std::endl;
+
+#ifdef RENDER_FONT_UNPACK_ALIGNMENT
+    _Data = (unsigned char*)malloc(desiredTextSize * TexCapacityHeight / 8);
+    memset(_Data, 0x00, desiredTextSize * TexCapacityHeight / 8);
+#else
+    _Data = (unsigned char*)malloc(desiredTextSize * TexCapacityHeight);
+    memset(_Data, 0x00, desiredTextSize * TexCapacityHeight);
+#endif
+
+    error = FT_Init_FreeType(&library);
+    if(error) {
+      std::cerr << "[ERROR] Failed to init FreeType library!" << std::endl;
+    }
+
+    error2 = FT_New_Face(library, fontname.c_str(), 0, &face);
+    if(error2 == FT_Err_Unknown_File_Format) {
+      std::cerr << "[ERROR] Font file format is not supported!! " << std::endl;
+      return false;
+    } else if(error2) {
+      std::cerr << "[ERROR] Font file not found or it is broken! " << std::endl;
+      return false;
+    }
+
+    // 3. 文字サイズを設定
+    // error = FT_Set_Char_Size(face, 0,
+    //                 size, // 幅と高さ
+    //                 100, 100);  // 水平、垂直解像度
+    error2 = FT_Set_Pixel_Sizes(face, fontsize, 0);
+    slot = face->glyph; // グリフへのショートカット
+
+    if(error || error2) {
+      std::cout << "an error happened during initializing freetype library\n";
+      return false;
+    }
+  }
+
+  unsigned int CursorY = TexHeight;
+  unsigned int CursorX = 0;
+  unsigned int TextMaxHeight = 0;
+
+  FT_UInt glyph_index;
+  int i, j, p, q, index, w, h, x_max, y_max;
+  uiGlyph g_tmp;
+
+  std::cout << "start rendering main glyphs...... n=" << N << std::endl;
+
+  int __nGlyph_enabled = 0;
+  for(unsigned int n = 0; n < N; n++) {
+    // reder one charf
+    glyph_index = FT_Get_Char_Index(face, GlyphRanges[n]);
+    error = FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT);
+    // FT_GlyphSlot_Oblique(face->glyph );
+    // FT_GlyphSlot_Embolden(face->glyph );
+
+    error2 = FT_Render_Glyph(slot, FT_RENDER_MODE_NORMAL);
+    if(error || error2) {
+      std::cout << "No matching glyph for char-> " << GlyphRanges[n] << std::endl;
+    } else {
+      w = (slot->bitmap).width;
+      h = (slot->bitmap).rows;
+
+      if(w + CursorX > desiredTextSize) {
+        CursorX = 0;
+        CursorY = TextMaxHeight;
+      }
+
+      while(TexCapacityHeight <= CursorY + h + 100) {
+        constexpr int glow_dh = 256;
+#ifdef RENDER_FONT_UNPACK_ALIGNMENT
+        unsigned char* new_data = (unsigned char*)malloc(desiredTextSize * (TexCapacityHeight + glow_dh) / 8);
+        if(_Data) {
+          memcpy(new_data, _Data, desiredTextSize * TexCapacityHeight / 8);
+          free(_Data);
+        }
+        _Data = new_data;
+        memset(_Data + desiredTextSize * TexCapacityHeight / 8, 0x00, desiredTextSize * glow_dh / 8);
+#else
+        unsigned char* new_data = (unsigned char*)malloc(desiredTextSize * (TexCapacityHeight + glow_dh));
+        if(_Data) {
+          memcpy(new_data, _Data, desiredTextSize * TexCapacityHeight);
+          free(_Data);
+        }
+        _Data = new_data;
+        memset(_Data + desiredTextSize * TexCapacityHeight, 0x00, desiredTextSize * glow_dh);
+#endif
+        TexCapacityHeight += glow_dh;
+      }
+
+      x_max = w + CursorX;
+      y_max = h + CursorY;
+
+      for(i = CursorX, p = 0; i < x_max; i++, p++) {
+        for(j = CursorY, q = 0; j < y_max; j++, q++) {
+          if(p < 0 || q < 0 || p >= w || q >= h) continue;
+          index = j * desiredTextSize + i;
+#ifdef RENDER_FONT_UNPACK_ALIGNMENT
+          _Data[index / 8] |= static_cast<unsigned char>(((slot->bitmap).buffer[q * w + p] > 70 ? 1 : 0) * std::pow(2.0, 7 - index % 8));
+#else
+          _Data[index] = (slot->bitmap).buffer[q * w + p];
+#endif
+        }
+      }
+
+      // IndexLookup.push_back(__nGlyph_enabled);
+      // g_tmp.Codepoint = GlyphRanges[n];
+      g_tmp.dHeight = slot->bitmap_top;
+      g_tmp.U0 = CursorX;
+      g_tmp.V0 = CursorY;
+      g_tmp.U1 = CursorX + w;
+      g_tmp.V1 = CursorY + h;
+      Glyphs[n] = g_tmp;
+
+      // std::cout << "[" << __nGlyph_enabled << "] '" << GlyphRanges[n] << " ("<< char(GlyphRanges[n]) << ")' --> at (" << g_tmp.U0 << ", " << g_tmp.V0 << ", " << g_tmp.U1 << ", " << g_tmp.V1 <<
+      // ")\n";
+
+      __nGlyph_enabled++;
+      CursorX += w;
+      TextMaxHeight = std::max(TextMaxHeight, CursorY + h);
+    }
+  }
+
+  std::cout << "All glyph was rendered!" << std::endl;
+  { // Lookuptableの作成
+    IndexLookup.resize(65536);
+    for(int i = 0; i < IndexLookup.size(); i++) {
+      IndexLookup[i] = 0xFFFF;
+    }
+
+    for(uiWchar i = 0; i < __nGlyph_enabled; i++) {
+      // auto z = Glyphs[i].Codepoint;
+      unsigned short z = GlyphRanges[i];
+      IndexLookup[z] = i;
+    }
+  }
+
+  FallbackGlyph = &(Glyphs[Glyphs.size() - 1]);
+  std::cout << "Index lookuptable was created! " << std::endl;
+
+  bool loop = false;
+  i = 0;
+  TexUvWhitePixel = {-1, -1};
+  while(loop) {
+#ifdef RENDER_FONT_UNPACK_ALIGNMENT
+    if(int(int(_Data[i / 8]) / std::pow(2.0, 7 - i % 8)) % 2 == 1) {
+      TexUvWhitePixel = {i % desiredTextSize, i / desiredTextSize};
+      std::cout << "White texture found!" << std::endl;
+      loop = false;
+    }
+#else
+    if(_Data[i] >= 0xF0) {
+      TexUvWhitePixel = {i % desiredTextSize, i / desiredTextSize};
+      std::cout << "White texture found!" << std::endl;
+      loop = false;
+    }
+#endif
+    i++;
+  }
+  if(TexUvWhitePixel[0] < 0) {
+    _Data[0] = 0xFF;
+    TexUvWhitePixel = {0, 0};
+    std::cerr << "White Texture not found!!" << std::endl;
+  }
+
+  nGlyph = __nGlyph_enabled;
+  TexWidth = desiredTextSize;
+  TexHeight = TextMaxHeight + CursorY;
+  TexHeight_capacity = TexCapacityHeight;
+  isBuildFinished = true;
+
+  //   std::cout << std::endl;    std::cout << std::endl;
+  //   std::cout << "----------------------------------------------------------" <<std::endl;
+  //   for(int j=0; j<TexHeight; j++){
+  //     for(int i=0; i< TexWidth; i++){
+  //         int index = j*TexWidth + i;
+  //         if (int(int(_Data[index/8])/std::pow(2.0, 7-index%8))%2 == 1){
+  //           std::cout <<"#";
+  //         }else{
+  //           std::cout << ".";
+  //         }
+  //     }
+  //     std::cout << std::endl;
+  //   }
+  //   std::cout << "----------------------------------------------------------" <<std::endl;
+  //   std::cout << std::endl;    std::cout << std::endl;
+
+
+  std::cout << "uiFont init finished!" << std::endl;
+}
+
+//フォンﾄトをレンダリングする
+bool uiFont::build() {
+  init();
+  MY_ASSERT(FontSize > 0);
+  MY_ASSERT(GlyphRanges != nullptr);
+  MY_ASSERT(isBuildFinished == false);
+
+  { // 色々初期化
     TexWidth = 0;
     TexHeight = 0;
     isBuildFinished = false;
-    
     if(_Data != nullptr) free(_Data);
     _Data = nullptr;
-
     IndexLookup.clear();
     Glyphs.clear();
+  }
 
-    // TODO: getStyle()
-    // auto style = getStyle();
-    // if(style == nullptr) {std::cout << "[error] cannot handle style \n";}
-    // setStyle(style);
+  // ImFontAtlasBuildInit(atlas);
+  // // Clear atlas
+  // atlas->TexID = NULL;
+  // atlas->TexWidth = atlas->TexHeight = 0;
+  // atlas->TexUvScale = ImVec2(0.0f, 0.0f);
+  // atlas->TexUvWhitePixel = ImVec2(0.0f, 0.0f);
+  // atlas->ClearTexData();
 
-    setFontSize(16.0f);
-    setFontName("../font/Meiryo.ttf");
-    setFontSpacing(2.0f);
-}
-
-bool uiFont::setLanguage(FontLanguage l){
-    // static uiWchar *glyphrange_tmp = nullptr;
-    switch(l){
-        case FontLanguage::Japansese: GlyphRanges = GetGlyphRangesJapanese();break;
-        case FontLanguage::Chinese:   GlyphRanges = GetGlyphRangesChinese(); break;
-        case FontLanguage::English:   GlyphRanges = GetGlyphRangesEnglish(); break;
-        case FontLanguage::Korean :   GlyphRanges = GetGlyphRangesKorean(); break;
-        default: return false;
-    }
-    return true;
-}
-
-// #undef RENDER_FONT_UNPACK_ALIGNMENT // 
-
-//フォンﾄトをレンダリングする
-bool uiFont::build(){
-    init();
-    MY_ASSERT(FontSize > 0);
-    MY_ASSERT(GlyphRanges != nullptr);
-    MY_ASSERT(isBuildFinished == false);
-    
-    
-    { // 色々初期化
-        TexWidth = 0;
-        TexHeight = 0;
-        isBuildFinished = false;
-        if(_Data != nullptr) free(_Data);
-        _Data = nullptr;
-        IndexLookup.clear();
-        Glyphs.clear();
-    }
-
-    // ImFontAtlasBuildInit(atlas);
-    // // Clear atlas
-    // atlas->TexID = NULL;
-    // atlas->TexWidth = atlas->TexHeight = 0;
-    // atlas->TexUvScale = ImVec2(0.0f, 0.0f);
-    // atlas->TexUvWhitePixel = ImVec2(0.0f, 0.0f);
-    // atlas->ClearTexData();
-
-    // // Temporary storage for building
-    // ImVector<ImFontBuildSrcData> src_tmp_array;
-    // ImVector<ImFontBuildDstData> dst_tmp_array;
-    // src_tmp_array.resize(atlas->ConfigData.Size);
-    // dst_tmp_array.resize(atlas->Fonts.Size);
-    // memset(src_tmp_array.Data, 0, (size_t)src_tmp_array.size_in_bytes());
-    // memset(dst_tmp_array.Data, 0, (size_t)dst_tmp_array.size_in_bytes());
+  // // Temporary storage for building
+  // ImVector<ImFontBuildSrcData> src_tmp_array;
+  // ImVector<ImFontBuildDstData> dst_tmp_array;
+  // src_tmp_array.resize(atlas->ConfigData.Size);
+  // dst_tmp_array.resize(atlas->Fonts.Size);
+  // memset(src_tmp_array.Data, 0, (size_t)src_tmp_array.size_in_bytes());
+  // memset(dst_tmp_array.Data, 0, (size_t)dst_tmp_array.size_in_bytes());
 
 
-    Glyphs.resize(nGlyph);
-
-    FT_Error error, error2;
-    unsigned int TexCapacityHeight = 128;
-
-    { //フォントレンダリングエンジンの初期化
-        desiredTextSize = (2048 > GL_MAX_TEXTURE_SIZE) ? int( std::pow(2, int(log2(GL_MAX_TEXTURE_SIZE)))) : 2048;
-        std::cout << "desired texture width = " << desiredTextSize << std::endl;
-
-#ifdef RENDER_FONT_UNPACK_ALIGNMENT
-        _Data = (unsigned char *)malloc(desiredTextSize*TexCapacityHeight/8);
-        memset(_Data, 0x00, desiredTextSize*TexCapacityHeight/8);
-#else
-        _Data = (unsigned char *)malloc(desiredTextSize*TexCapacityHeight);
-        memset(_Data, 0x00, desiredTextSize*TexCapacityHeight);
-#endif
-
-        error = FT_Init_FreeType( &library ) ;
-        if (error) { std::cerr << "[ERROR] Failed to init FreeType library!" << std::endl; }
-
-
-		error2 = FT_New_Face( library, FontName.c_str(), 0, &face);
-		if ( error2 == FT_Err_Unknown_File_Format ){
-			std::cerr << "[ERROR] Font file format is not supported!! " << std::endl; return false;
-		}else if ( error2 ){
-			std::cerr << "[ERROR] Font file not found or it is broken! " << std::endl; return false;
-		}
-		
-		// 3. 文字サイズを設定
-		// error = FT_Set_Char_Size(face, 0,
-		//                 size, // 幅と高さ
-		//                 100, 100);  // 水平、垂直解像度
-		error2 = FT_Set_Pixel_Sizes(face, FontSize, 0);
-		slot = face->glyph;  // グリフへのショートカット
-
-        if(error || error2) {
-            std::cout << "an error happened during initializing freetype library\n";
-            return false;
-        }
-    }
-
-    unsigned int CursorY = 0;
-    unsigned int CursorX = 0;
-    unsigned int TextMaxHeight = 0;
-
-    FT_UInt glyph_index;
-    int  i, j, p, q, index, w, h, x_max, y_max;
-    uiGlyph g_tmp;
-
-    std::cout << "start rendering main glyphs...... n=" << nGlyph << std::endl;
-
-    int __nGlyph_enabled = 0;
-    for(unsigned int n = 0; n<nGlyph; n++){
-        //reder one charf
-        glyph_index = FT_Get_Char_Index( face, GlyphRanges[n]);
-		error = FT_Load_Glyph( face, glyph_index, FT_LOAD_DEFAULT );
-		// FT_GlyphSlot_Oblique(face->glyph );
-		// FT_GlyphSlot_Embolden(face->glyph );
-
-		error2 = FT_Render_Glyph(slot, FT_RENDER_MODE_NORMAL);
-        if(error || error2){
-            std::cout << "No matching glyph for char-> " << GlyphRanges[n] << std::endl;
-        }else{
-            w = (slot->bitmap).width;
-            h = (slot->bitmap).rows;
-
-            if(w + CursorX > desiredTextSize){
-                CursorX = 0;
-                CursorY = TextMaxHeight;
-            }
-            
-            while(TexCapacityHeight <= CursorY + h + 100){
-                constexpr int glow_dh = 256;
-#ifdef RENDER_FONT_UNPACK_ALIGNMENT
-                unsigned char *new_data = (unsigned char *)malloc(desiredTextSize * (TexCapacityHeight + glow_dh) / 8);
-                if(_Data){
-                    memcpy(new_data, _Data, desiredTextSize*TexCapacityHeight/ 8);
-                    free(_Data);
-                }
-                _Data = new_data;
-                memset(_Data + desiredTextSize * TexCapacityHeight/8, 0x00, desiredTextSize * glow_dh/8);
-#else
-                unsigned char *new_data = (unsigned char *)malloc(desiredTextSize * (TexCapacityHeight + glow_dh));
-                if(_Data){
-                    memcpy(new_data, _Data, desiredTextSize*TexCapacityHeight);
-                    free(_Data);
-                }
-                _Data = new_data;
-                memset(_Data + desiredTextSize * TexCapacityHeight, 0x00, desiredTextSize * glow_dh);
-#endif
-                TexCapacityHeight += glow_dh;
-            }
-
-            x_max = w+CursorX;
-            y_max = h+CursorY;
-
-            for ( i = CursorX, p = 0; i < x_max; i++, p++ ){
-                for ( j = CursorY, q = 0; j < y_max; j++, q++ ){
-                    if ( p < 0      || q < 0       || p >= w || q >= h) continue;
-                    index = j*desiredTextSize + i;
-#ifdef RENDER_FONT_UNPACK_ALIGNMENT
-                    _Data[index/8] |= static_cast<unsigned char>(((slot->bitmap).buffer[q * w + p] > 70 ? 1 : 0)
-                                                                     * std::pow(2.0, 7-index%8));
-#else
-                    _Data[index] = (slot->bitmap).buffer[q * w + p];
-#endif
-                }
-            }
-
-            // IndexLookup.push_back(__nGlyph_enabled);
-            // g_tmp.Codepoint = GlyphRanges[n];
-            g_tmp.dHeight   = slot->bitmap_top;
-            g_tmp.U0        = CursorX;
-            g_tmp.V0        = CursorY;
-            g_tmp.U1        = CursorX + w;
-            g_tmp.V1        = CursorY + h;
-            Glyphs[n] = g_tmp;
-
-            // std::cout << "[" << __nGlyph_enabled << "] '" << GlyphRanges[n] << " ("<< char(GlyphRanges[n]) << ")' --> at (" << g_tmp.U0 << ", " << g_tmp.V0 << ", " << g_tmp.U1 << ", " << g_tmp.V1 << ")\n";
-            
-            __nGlyph_enabled++;
-            CursorX += w;
-            TextMaxHeight = std::max(TextMaxHeight, CursorY + h);
-        }
-    }
-
-    std::cout << "All glyph was rendered!" << std::endl;
-    { //Lookuptableの作成
-        IndexLookup.resize(65536);
-        for(int i=0; i<IndexLookup.size(); i++){
-            IndexLookup[i] = 0xFFFF;
-        }
-
-        for(uiWchar i=0; i<__nGlyph_enabled; i++){
-            //auto z = Glyphs[i].Codepoint;
-            unsigned short z = GlyphRanges[i];
-            IndexLookup[z] = i;
-        }
-
-    }
-
-    FallbackGlyph = &(Glyphs[Glyphs.size()-1]);
-    std::cout << "Index lookuptable was created! " << std::endl;
-
-    bool loop = false; i=0;
-    TexUvWhitePixel = {-1, -1};
-    while(loop){
-#ifdef RENDER_FONT_UNPACK_ALIGNMENT
-        if (int(int(_Data[i/8])/std::pow(2.0, 7-i%8))%2 == 1){
-            TexUvWhitePixel = { i%desiredTextSize, i/desiredTextSize };
-            std::cout << "White texture found!" << std::endl;
-            loop = false;
-        }
-#else
-        if (_Data[i] >= 0xF0){
-            TexUvWhitePixel = { i%desiredTextSize, i/desiredTextSize };
-            std::cout << "White texture found!" << std::endl;
-            loop = false;
-        }
-#endif
-        i++;
-    }
-    if(TexUvWhitePixel[0] < 0){
-        _Data[0] = 0xFF;
-        TexUvWhitePixel = {0, 0};
-        std::cerr << "White Texture not found!!" << std::endl;
-    }
-
-    nGlyph = __nGlyph_enabled;
-    TexWidth = desiredTextSize;
-    TexHeight = TextMaxHeight + CursorY;
-    TexHeight_capacity = TexCapacityHeight;
-    isBuildFinished = true;
-
-//   std::cout << std::endl;    std::cout << std::endl;
-//   std::cout << "----------------------------------------------------------" <<std::endl;
-//   for(int j=0; j<TexHeight; j++){
-//     for(int i=0; i< TexWidth; i++){
-//         int index = j*TexWidth + i;
-//         if (int(int(_Data[index/8])/std::pow(2.0, 7-index%8))%2 == 1){
-//           std::cout <<"#";
-//         }else{
-//           std::cout << ".";
-//         }
-//     }
-//     std::cout << std::endl;
-//   }
-//   std::cout << "----------------------------------------------------------" <<std::endl;
-//   std::cout << std::endl;    std::cout << std::endl;
-
-
+  Glyphs.resize(nGlyph);
+  build_internal(FontName, FontSize, GlyphRanges, nGlyph);
+  build_internal(iconFontName, FontSize, IconGlyphRanges, nIconGlyph);
   std::cout << "uiFont init finished!" << std::endl;
   return true;
 }
@@ -331,26 +356,31 @@ void uiFont::setStyle(uiStyle *style){
     FontName = style->FontName;
 }
 */
-void uiFont::setFontSize(const int s){ FontSize = s; }
-void uiFont::setFontSpacing(const int s){ Spacing = s; }
-void uiFont::setFontName(const std::string &s){ FontName = s; }
-
-uiGlyph* uiFont::FindGlyph(uiWchar c){
-    if (c >= (size_t)IndexLookup.Size)
-        return FallbackGlyph;
-    const uiWchar i = IndexLookup.Data[c];
-    if (i == 0xFFFF){
-        return FallbackGlyph;
-    }
-    return &Glyphs[i];
+void uiFont::setFontSize(const int s) {
+  FontSize = s;
+}
+void uiFont::setFontSpacing(const int s) {
+  Spacing = s;
+}
+void uiFont::setFontName(const std::string& s) {
+  FontName = s;
 }
 
-bool uiFont::getSize(uiWchar c, Vector2d *size, unsigned int *dH){
-    auto g = FindGlyph(c);
-    (*size)[0] = g->U1 - g->U0;
-    (*size)[0] = g->V1 - g->V0;
-    *dH = g->dHeight;
-    return !(g == FallbackGlyph);
+uiGlyph* uiFont::FindGlyph(uiWchar c) {
+  if(c >= (size_t)IndexLookup.Size) return FallbackGlyph;
+  const uiWchar i = IndexLookup.Data[c];
+  if(i == 0xFFFF) {
+    return FallbackGlyph;
+  }
+  return &Glyphs[i];
+}
+
+bool uiFont::getSize(uiWchar c, Vector2d* size, unsigned int* dH) {
+  auto g = FindGlyph(c);
+  (*size)[0] = g->U1 - g->U0;
+  (*size)[0] = g->V1 - g->V0;
+  *dH = g->dHeight;
+  return !(g == FallbackGlyph);
 }
 
 
