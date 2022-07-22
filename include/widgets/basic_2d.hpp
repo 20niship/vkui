@@ -207,6 +207,16 @@ public:
 	bool CallbackFunc(uiCallbackFlags flag, Vector2d vec2_1, int num_1, int num_2, const char **strings) override;
 };
 
+class uiTextTexture : public uiWidget{
+  int last_not_collapse_size{-1};
+  bool last_collapsing{false};
+public:
+	uiTextTexture();
+	void render() override;
+	bool CallbackFunc(uiCallbackFlags flag, Vector2d vec2_1, int num_1, int num_2, const char **strings) override;
+};
+
+
 namespace Widget{
 	inline uiWidget *Label(const std::string text_)                                  { return (new vkUI::uiLabel(text_));}
 	inline uiWidget *Label(const std::string text_, const Vector3b &col)             { return (new vkUI::uiLabel(text_, col));}

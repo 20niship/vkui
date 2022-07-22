@@ -1,4 +1,5 @@
 #pragma once
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <cmath>
 #include <limits>
@@ -829,6 +830,28 @@ public:
   inline void AddRectPosSize(const Vector2d& pos, const Vector2d& size, const Vector3b& col) {
     AddRectTB2D(pos, pos + size, col);
   }
+  inline void AddRectPosSize(const Vector2d& p, const Vector2d& size, const Vector2d &ui1, const Vector2d &ui2, const Vector3b& col={255, 255, 255}) {
+    const auto top = p;
+    const auto btm = p + size;
+
+    const Vector2d pos[4] = {
+      top,
+      Vector2d(top[0], btm[1]),
+      btm,
+      Vector2d(btm[0], top[1]),
+    };
+
+    const Vector2d upos[4] = {
+      ui1,
+      Vector2d(ui1[0], ui2[1]),
+      ui2,
+      Vector2d(ui2[0], ui1[1]),
+    };
+
+    AddTriangle2D(pos[0], pos[1], pos[2], col, col, col, upos[0], upos[1], upos[2]);
+    AddTriangle2D(pos[0], pos[2], pos[3], col, col, col, upos[0], upos[2], upos[3]);
+  }
+
   void AddRotatedRectPosSize(const Vector2d& pos, const Vector2d& size, const double theta, const Vector3b& col);
   void AddRotatedRectPosSize(const Vector2d& pos, const Vector2d& size, const double theta, const Vector3b& col, const float width = 2.0f);
   inline void AddRectPosSize(const Vector2d& pos, const Vector2d& size, const Vector3b& col, float width) {
@@ -1066,7 +1089,7 @@ public:
   unsigned int TexHeight_capacity; // 予約済み　のテクスちゃ老域の全体高さ
   bool isBuildFinished;            // フォントの作成が終わったかどうか
   FontLanguage language;
-  uiWchar *GlyphRanges, IconGlyphRanges;
+  uiWchar *GlyphRanges, *IconGlyphRanges;
   unsigned int nGlyph, nIconGlyph; // GlyphRangesの配列の数（つまりグリフの数）
   std::string FontName;
   std::string iconFontName;

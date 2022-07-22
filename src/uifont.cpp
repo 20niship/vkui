@@ -1,5 +1,7 @@
-#include "../include/engine.hpp"
-#include <libintl.h>
+#include <engine.hpp>
+#include <logger.hpp>
+#include <sstream>
+
 namespace vkUI::Engine {
 
 // -----------------------------------------------------
@@ -44,7 +46,7 @@ uiWchar* uiFont::getGlyphRangeIcon() {
   static uiWchar ranges[] = {
 #include "../data/font/Glyphs/Icon.csv"
   };
-  nIconGlyphGlyph = sizeof(ranges) / sizeof(uiWchar);
+  nIconGlyph = sizeof(ranges) / sizeof(uiWchar);
   return ranges;
 }
 
@@ -91,7 +93,7 @@ void uiFont::init() {
 
   setFontSize(16.0f);
   setFontName("../font/Meiryo.ttf");
-  setIconFontName("../font/MelsoLGS.ttf");
+  setIconFontName("../font/MesloLGS.ttf");
   setFontSpacing(2.0f);
 }
 
@@ -110,23 +112,12 @@ bool uiFont::setLanguage(FontLanguage l) {
 // #undef RENDER_FONT_UNPACK_ALIGNMENT //
 //
 
+unsigned int TexCapacityHeight = 128;
 
-bool uiFont::build_internal(const std::string &fontname, const int fontsize, const uiWchar *GLyphRange, const int N){
+bool uiFont::build_internal(const std::string& fontname, const int fontsize, const uiWchar* GlyphRange, const int N) {
   FT_Error error, error2;
-  unsigned int TexCapacityHeight = 128;
-
-  { //フォントレンダリングエンジンの初期化
-    desiredTextSize = (2048 > GL_MAX_TEXTURE_SIZE) ? int(std::pow(2, int(log2(GL_MAX_TEXTURE_SIZE)))) : 2048;
-    std::cout << "desired texture width = " << desiredTextSize << std::endl;
-
-#ifdef RENDER_FONT_UNPACK_ALIGNMENT
-    _Data = (unsigned char*)malloc(desiredTextSize * TexCapacityHeight / 8);
-    memset(_Data, 0x00, desiredTextSize * TexCapacityHeight / 8);
-#else
-    _Data = (unsigned char*)malloc(desiredTextSize * TexCapacityHeight);
-    memset(_Data, 0x00, desiredTextSize * TexCapacityHeight);
-#endif
-
+  {
+    //フォントレンダリングエンジンの初期化
     error = FT_Init_FreeType(&library);
     if(error) {
       std::cerr << "[ERROR] Failed to init FreeType library!" << std::endl;
@@ -134,10 +125,12 @@ bool uiFont::build_internal(const std::string &fontname, const int fontsize, con
 
     error2 = FT_New_Face(library, fontname.c_str(), 0, &face);
     if(error2 == FT_Err_Unknown_File_Format) {
-      std::cerr << "[ERROR] Font file format is not supported!! " << std::endl;
+      uiLOGE << "[ERROR] Font file format is not supported!! ";
+      uiLOGE << fontname;
       return false;
     } else if(error2) {
-      std::cerr << "[ERROR] Font file not found or it is broken! " << std::endl;
+      uiLOGE << "[ERROR] Font file not found or it is broken! ";
+      uiLOGE << fontname;
       return false;
     }
 
@@ -167,17 +160,25 @@ bool uiFont::build_internal(const std::string &fontname, const int fontsize, con
   int __nGlyph_enabled = 0;
   for(unsigned int n = 0; n < N; n++) {
     // reder one charf
-    glyph_index = FT_Get_Char_Index(face, GlyphRanges[n]);
+    glyph_index = FT_Get_Char_Index(face, GlyphRange[n]);
     error = FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT);
     // FT_GlyphSlot_Oblique(face->glyph );
     // FT_GlyphSlot_Embolden(face->glyph );
 
     error2 = FT_Render_Glyph(slot, FT_RENDER_MODE_NORMAL);
     if(error || error2) {
-      std::cout << "No matching glyph for char-> " << GlyphRanges[n] << std::endl;
+      std::cout << "No matching glyph for char-> " << GlyphRange[n] << std::endl;
     } else {
       w = (slot->bitmap).width;
       h = (slot->bitmap).rows;
+
+      const int max_font_size = 30;
+      if(w > 30 || h > 30) {
+        std::stringstream ss;
+        ss << "Font size too large!" << w << " , " << h << " at " << fontname << " " << n << " -- > 0x" << std::hex << GlyphRange[n];
+        uiLOGE << ss.str();
+        continue;
+      }
 
       if(w + CursorX > desiredTextSize) {
         CursorX = 0;
@@ -228,7 +229,8 @@ bool uiFont::build_internal(const std::string &fontname, const int fontsize, con
       g_tmp.V0 = CursorY;
       g_tmp.U1 = CursorX + w;
       g_tmp.V1 = CursorY + h;
-      Glyphs[n] = g_tmp;
+      Glyphs.push_back(g_tmp);
+      IndexLookup[GlyphRange[n]] = Glyphs.size() - 1;
 
       // std::cout << "[" << __nGlyph_enabled << "] '" << GlyphRanges[n] << " ("<< char(GlyphRanges[n]) << ")' --> at (" << g_tmp.U0 << ", " << g_tmp.V0 << ", " << g_tmp.U1 << ", " << g_tmp.V1 <<
       // ")\n";
@@ -239,19 +241,7 @@ bool uiFont::build_internal(const std::string &fontname, const int fontsize, con
     }
   }
 
-  std::cout << "All glyph was rendered!" << std::endl;
-  { // Lookuptableの作成
-    IndexLookup.resize(65536);
-    for(int i = 0; i < IndexLookup.size(); i++) {
-      IndexLookup[i] = 0xFFFF;
-    }
-
-    for(uiWchar i = 0; i < __nGlyph_enabled; i++) {
-      // auto z = Glyphs[i].Codepoint;
-      unsigned short z = GlyphRanges[i];
-      IndexLookup[z] = i;
-    }
-  }
+  std::cout << "All glyph was rendered! --> " << fontname << std::endl;
 
   FallbackGlyph = &(Glyphs[Glyphs.size() - 1]);
   std::cout << "Index lookuptable was created! " << std::endl;
@@ -283,7 +273,7 @@ bool uiFont::build_internal(const std::string &fontname, const int fontsize, con
 
   nGlyph = __nGlyph_enabled;
   TexWidth = desiredTextSize;
-  TexHeight = TextMaxHeight + CursorY;
+  TexHeight = TextMaxHeight; // + CursorY;
   TexHeight_capacity = TexCapacityHeight;
   isBuildFinished = true;
 
@@ -304,7 +294,8 @@ bool uiFont::build_internal(const std::string &fontname, const int fontsize, con
   //   std::cout << std::endl;    std::cout << std::endl;
 
 
-  std::cout << "uiFont init finished!" << std::endl;
+  std::cout << "uiFont init finished!  " << TexWidth << " ,  " << TexHeight << std::endl;
+  return true;
 }
 
 //フォンﾄトをレンダリングする
@@ -340,8 +331,23 @@ bool uiFont::build() {
   // memset(src_tmp_array.Data, 0, (size_t)src_tmp_array.size_in_bytes());
   // memset(dst_tmp_array.Data, 0, (size_t)dst_tmp_array.size_in_bytes());
 
+  desiredTextSize = (2048 > GL_MAX_TEXTURE_SIZE) ? int(std::pow(2, int(log2(GL_MAX_TEXTURE_SIZE)))) : 2048;
+  std::cout << "desired texture width = " << desiredTextSize << std::endl;
 
-  Glyphs.resize(nGlyph);
+#ifdef RENDER_FONT_UNPACK_ALIGNMENT
+  _Data = (unsigned char*)malloc(desiredTextSize * TexCapacityHeight / 8);
+  memset(_Data, 0x00, desiredTextSize * TexCapacityHeight / 8);
+#else
+  _Data = (unsigned char*)malloc(desiredTextSize * TexCapacityHeight);
+  memset(_Data, 0x00, desiredTextSize * TexCapacityHeight);
+#endif
+
+  Glyphs.clear();
+  IndexLookup.resize(65536);
+  for(int i = 0; i < IndexLookup.size(); i++) {
+    IndexLookup[i] = 0xFFFF;
+  }
+
   build_internal(FontName, FontSize, GlyphRanges, nGlyph);
   build_internal(iconFontName, FontSize, IconGlyphRanges, nIconGlyph);
   std::cout << "uiFont init finished!" << std::endl;
@@ -362,10 +368,14 @@ void uiFont::setFontSize(const int s) {
 void uiFont::setFontSpacing(const int s) {
   Spacing = s;
 }
+
 void uiFont::setFontName(const std::string& s) {
   FontName = s;
 }
 
+void uiFont::setIconFontName(const std::string& s) {
+  iconFontName = s;
+}
 uiGlyph* uiFont::FindGlyph(uiWchar c) {
   if(c >= (size_t)IndexLookup.Size) return FallbackGlyph;
   const uiWchar i = IndexLookup.Data[c];

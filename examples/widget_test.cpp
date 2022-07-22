@@ -4,6 +4,7 @@
 #include <widgets/basic.hpp>
 #include <random>
 #include <time.h>
+#include <icon.hpp>
 
 using namespace vkUI;
 using namespace vkUI::Engine;
@@ -59,17 +60,22 @@ int main() {
         frame.AddWidget({
           vkUI::Widget::Button("main", &hoge),
           vkUI::Widget::Label("mai\naa\n15315afan"),
+          vkUI::Widget::Label(""),
+          vkUI::Widget::Label("Icon Tests = " + vkUI::Icon::FOLDER),
           vkUI::Widget::Slider("aaa", &huga, Vector2(0, 1000)),
           vkUI::Widget::DragVec3("aaa", &vec, Vector2(0, 1000)),
           vkUI::Widget::Table("aaa\tbbb\tccc\n123\r456\r789\naaa\rvvv\rhhh\naa\rhh\rX")
         });
 
         auto frame2 = vkUI::uiFrame("plot");
+        auto frame3 = vkUI::uiTextTexture();
         auto plot = vkUI::uiPlot("TITLE");
         frame2.setSize({300, 300});
+        frame3.setSize({500, 500});
         frame2.setPos({400, 10});
         frame2.AddWidget(&plot);
         wnd->addWidget2D(&frame2);
+        wnd->addWidget2D(&frame3);
 
         vkUI::Engine::initFinish();
         bool loop = true;
