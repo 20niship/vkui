@@ -1,4 +1,5 @@
 add_executable(main main.cpp)
+message(${ALL_LINKS})
 target_link_libraries(main ${ALL_LINKS})
 
 add_executable(widget_test widget_test.cpp)

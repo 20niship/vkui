@@ -8,7 +8,6 @@
 #include <fstream>
 #include <stdexcept>
 #include <algorithm>
-#include <vector>
 #include <cstring>
 #include <cstdlib>
 #include <array>
@@ -23,7 +22,7 @@
 #include FT_FREETYPE_H
 
 #include "stb/stb_image.h"
-#include <myvector.hpp>
+#include <cutil/vector.hpp>
 #include "enums.hpp"
 #include "widget.hpp"
 

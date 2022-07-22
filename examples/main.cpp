@@ -3,9 +3,6 @@
 #include <widgets/basic_2d.hpp>
 #include <widgets/basic.hpp>
 
-#include <myvector.hpp>
-
-
 Vector3 pos = {2, 3, 4}; //{1, 2, 3};
 Vector3 dir = {5, 5, 5};
 Vector3 u = {0, 1, 0};
