@@ -3,7 +3,6 @@
 #include <GLFW/glfw3.h>
 #include <cmath>
 #include <limits>
-#include <vulkan/vulkan.hpp>
 
 #include <algorithm>
 #include <array>
@@ -26,6 +25,13 @@
 #include "widget.hpp"
 #include <cutil/vector.hpp>
 #include <uiCamera.hpp>
+
+/* #include <gl/internal.hpp> */
+#include <drawdata.hpp>
+#include <vk/internal.hpp>
+
+using uiRenderer = vkUI::Render::vkRender;
+using uiWndRenderer = vkUI::Render::vkWndRender;
 
 namespace vkUI {
 struct uiRect {
@@ -74,155 +80,6 @@ using uihWidget = uiWidget*;
 // keycoard, scancode, action, mods, position
 using KeyboardFuncT = std::function<bool(int, int, int, int, Vector2)>;
 
-#define VK_ENGINE_MAX_FRAMES_IN_FLIGHT 2
-#define VK_ENGINE_ENABLE_VALIDATION_LAYERS
-#define VKUI_ENGINE_ENABLE_FPS_CALC
-#define VKUI_ENGINE_USE_FLOAT_VERTEX
-
-struct SwapChainSupportDetails {
-  vk::SurfaceCapabilitiesKHR capabilities;
-  std::vector<vk::SurfaceFormatKHR> formats;
-  std::vector<vk::PresentModeKHR> presentModes;
-};
-
-struct QueueFamilyIndices {
-  std::optional<uint32_t> graphicsFamily;
-  std::optional<uint32_t> presentFamily;
-  bool isComplete() { return graphicsFamily.has_value() && presentFamily.has_value(); }
-};
-
-// -----------------------------------------------------
-//    [SECTION] Buffer
-// -----------------------------------------------------
-struct uiBuffer {
-  vk::Buffer buf, staging_buf;
-  vk::DeviceMemory buf_mem, staging_buf_mem;
-  vk::UniqueDevice* device_ptr;
-  vk::MemoryPropertyFlags prop;
-  vk::DeviceSize buf_size;
-  vk::BufferUsageFlags usage;
-  bool allocated;
-  bool use_staging_buffer;
-
-  uiBuffer();
-  uiBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties);
-  ~uiBuffer();
-  inline void setUseStagingBuf(bool v) { use_staging_buffer = v; }
-  void create(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties);
-  void __create(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::Buffer* buf_p, vk::DeviceMemory* mem_p);
-  uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
-  static std::vector<char> readFile(const std::string& filename);
-  vk::CommandBuffer __beginSingleTimeCommands();
-  void __endSingleTimeCommands(vk::CommandBuffer commandBuffer);
-  void __copyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
-
-  void copyData(void* src, size_t size);
-  void cleanup();
-};
-
-
-// -----------------------------------------------------
-//    [SECTION] Vertex
-// -----------------------------------------------------
-struct Vertex {
-#ifdef VKUI_ENGINE_USE_FLOAT_VERTEX
-  float pos[3];
-  // float uv[2];
-#else
-  int16_t pos[3];
-  // uint16_t uv[2];
-#endif
-  uint8_t col[3];
-
-  static vk::VertexInputBindingDescription getBindingDescription() {
-    vk::VertexInputBindingDescription bindingDescription = {};
-    bindingDescription.binding = 0;
-    bindingDescription.stride = sizeof(Vertex);
-    bindingDescription.inputRate = vk::VertexInputRate::eVertex;
-    return bindingDescription;
-  }
-
-  static std::array<vk::VertexInputAttributeDescription, 2> getAttributeDescriptions() {
-    std::array<vk::VertexInputAttributeDescription, 2> attributeDescriptions = {};
-    attributeDescriptions[0].binding = 0;
-    attributeDescriptions[0].location = 0;
-#ifdef VKUI_ENGINE_USE_FLOAT_VERTEX
-    attributeDescriptions[0].format = vk::Format::eR32G32B32Sfloat;
-#else
-    attributeDescriptions[0].format = vk::Format::eR16G16B16Sint;
-#endif
-    attributeDescriptions[0].offset = offsetof(Vertex, pos);
-
-    attributeDescriptions[1].binding = 0;
-    attributeDescriptions[1].location = 1;
-    attributeDescriptions[1].format = vk::Format::eR8G8B8Uint;
-    attributeDescriptions[1].offset = offsetof(Vertex, col);
-
-    //         attributeDescriptions[2].binding = 0;
-    //         attributeDescriptions[2].location = 2;
-    // #ifdef VKUI_ENGINE_USE_FLOAT_VERTEX
-    //         attributeDescriptions[2].format = vk::Format::eR32G32Sfloat;
-    // #else
-    //         attributeDescriptions[2].format = vk::Format::eR16G16Uint;
-    // #endif
-    //         attributeDescriptions[2].offset = offsetof(Vertex, uv);
-    return attributeDescriptions;
-  }
-
-  Vertex(const Vector3& _pos, const Vector3b& _col /*, const Vector2 _uv = {0.0f, 0.0f } */) {
-    pos[0] = _pos[0];
-    pos[1] = _pos[1];
-    pos[2] = _pos[2];
-    col[0] = _col[0];
-    col[1] = _col[1];
-    col[2] = _col[2];
-    // uv[0]  = _uv[0];  uv[1]  = _uv[1];
-  }
-};
-
-struct VertexUI {
-  int16_t pos[2];
-  uint8_t col[3];
-  uint16_t uv[2];
-
-  static vk::VertexInputBindingDescription getBindingDescription() {
-    vk::VertexInputBindingDescription bindingDescription = {};
-    bindingDescription.binding = 0;
-    bindingDescription.stride = sizeof(VertexUI);
-    bindingDescription.inputRate = vk::VertexInputRate::eVertex;
-    return bindingDescription;
-  }
-
-  static std::array<vk::VertexInputAttributeDescription, 3> getAttributeDescriptions() {
-    std::array<vk::VertexInputAttributeDescription, 3> attributeDescriptions = {};
-    attributeDescriptions[0].binding = 0;
-    attributeDescriptions[0].location = 0;
-    attributeDescriptions[0].format = vk::Format::eR16G16Sint;
-    attributeDescriptions[0].offset = offsetof(VertexUI, pos);
-
-    attributeDescriptions[1].binding = 0;
-    attributeDescriptions[1].location = 1;
-    attributeDescriptions[1].format = vk::Format::eR8G8B8Uint;
-    attributeDescriptions[1].offset = offsetof(VertexUI, col);
-
-    attributeDescriptions[2].binding = 0;
-    attributeDescriptions[2].location = 2;
-    attributeDescriptions[2].format = vk::Format::eR16G16Uint;
-    attributeDescriptions[2].offset = offsetof(VertexUI, uv);
-    return attributeDescriptions;
-  }
-  template <typename T> VertexUI(const _Vec<T, 2>& _pos, const Vector3b& _col, const _Vec<T, 2>& _uv) {
-    pos[0] = _pos[0];
-    pos[1] = _pos[1];
-    col[0] = _col[0];
-    col[1] = _col[1];
-    col[2] = _col[2];
-    uv[0] = _uv[0];
-    uv[1] = _uv[1];
-  }
-};
-
-
 // -----------------------------------------------------
 //    [SECTION] uiWindow
 // -----------------------------------------------------
@@ -243,26 +100,8 @@ private:
 
   CameraPosition camera_position;
 
-  struct UniformData {
-    float proj[16];
-    float proj_uv[16];
-    float texure_size[2];
-  } uniform_data;
-
-  void createSwapChain();
-  void createImageViews();
-  void createRenderPass();
-  void createDescriptorSetLayout();
-  void createGraphicsPipeline();
-  void createGraphicsPipeline_UI();
-  vk::SurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
-  vk::PresentModeKHR chooseSwapPresentMode(const std::vector<vk::PresentModeKHR> availablePresentModes);
-  vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities);
-  void createFramebuffers();
-  void createCommandBuffers(bool);
-
-  void updateUniformBuffer();
-  void renderUI();
+  DrawData dd;
+  uiWndRenderer renderer;
 
   float fps;
   uint64_t currentFrame;
@@ -270,6 +109,8 @@ private:
   Vector2d pos, size;
   ::vkUI::uiRect clipping_rect{0, 0, 99999, 999999};
   KeyboardFuncT user_key_cb;
+  void updateUniformBuffer();
+  void renderUI();
 
 public:
   struct _wndStyle {
@@ -279,62 +120,12 @@ public:
     unsigned char isFullScreen : 1;
   } wndStyle;
 
-  struct DrawList {
-    struct DrawData {
-      int start, size;
-      int tex_id;
-      int z_index;
-      Vector2d scissor_top, scissor_btm;
-    };
-    int _last_end, _tex_id, _z_index;
-    std::vector<DrawData> drawlist;
-    uiVector<VertexUI> vertices_ui;
-    void set_tex_id(const int id) {
-      if(id != _tex_id) push();
-      _tex_id = id;
-    }
-    void set_z_index(const int z) {
-      if(z != _z_index) push();
-      _z_index = z;
-    }
-    void push() {
-      DrawData d;
-      d.start = _last_end;
-      d.size = vertices_ui.size() - _last_end;
-      d.tex_id = _tex_id;
-      d.scissor_btm = {0, 0};
-      d.scissor_top = {0, 0};
-      d.z_index = _z_index;
-      drawlist.push_back(d);
-      _last_end = vertices_ui.size() - 1;
-    }
-    void clear() { drawlist.clear(); }
-    auto sort() {
-      std::sort(drawlist.begin(), drawlist.end(), [](const auto &x, const auto &y) { return x.z_index < y.z_index; });
-    }
-  };
-
-  DrawList dd;
-
-  uiVector<Vertex> vertices;
   ::vkUI::uiRootWidget root_widget;
   ::vkUI::uiRootWidget2D root_widget_ui;
   GLFWwindow* window;
   bool framebufferResized;
-  vk::SurfaceKHR surface;
-  vk::SwapchainKHR swapChain;
-  std::vector<vk::Image> swapChainImages;
-  vk::Format swapChainImageFormat;
-  vk::Extent2D swapChainExtent;
-  std::vector<vk::ImageView> swapChainImageViews;
-  std::vector<vk::Framebuffer> swapChainFramebuffers;
-  vk::RenderPass renderPass;
-  vk::PipelineLayout pipelineLayout, pipelineLayout_ui;
-  vk::UniquePipeline graphicsPipeline, graphicsPipeline_ui;
-  std::vector<vk::DescriptorSet> descriptorSet;
-  vk::DescriptorSetLayout descriptorSetLayout;
-  uiBuffer uniformBuffer, vertexBuffer, vertexBuffer_ui;
-  std::vector<vk::CommandBuffer, std::allocator<vk::CommandBuffer>> commandBuffers;
+
+  auto get_renderer() { return &renderer; }
 
   static void resizeCB_static(GLFWwindow* window, int width, int height) {
     auto app = reinterpret_cast<uiWindow*>(glfwGetWindowUserPointer(window));
@@ -364,16 +155,11 @@ public:
 public:
   uiWindow(std::string _name, uint16_t width, uint16_t height);
   ~uiWindow();
-  void cleanupSwapChain();
-  void recreateSwapChain();
-  SwapChainSupportDetails querySwapChainSupport(const vk::PhysicalDevice& device);
-  void createSurface();
   void drawFrame(const bool verbose = false);
   void drawDevelopperHelps();
+  inline auto getVertexPtr() { return &dd.vertices; }
   void updateVertexBuffer();
-  inline auto getVertexPtr() { return &vertices; }
   void init();
-  inline vk::SurfaceKHR getSurface() { return surface; }
   inline auto getGLFWwindow() const { return window; }
   inline bool wndShouldClose() { return glfwWindowShouldClose(window); }
   Vector2d getWindowSize() const {
@@ -430,6 +216,7 @@ public:
     size[0] = w;
     size[1] = h;
     root_widget_ui.needRendering(true);
+    renderer.update_wndsize(); // draw()の最後似合ったのを変更
   }
 
   void mouseCB(double x, double y);
@@ -495,13 +282,13 @@ public:
 
   // ----------  rendering functions --------------
   inline void RemoveVerticies() {
-    vertices.resize(0);
+    dd.vertices.resize(0);
   }
   inline void __AddPointSizeZero(const Vector3& pos, const Vector3b& col) {
-    vertices.push_back(std::move(Vertex(pos, col)));
+    dd.vertices.push_back(std::move(Vertex(pos, col)));
   }
   [[deprecated]] inline void __AddPointSizeZero(const Vector3& pos, const Vector3b& col, [[maybe_unused]] const Vector2& uv) {
-    vertices.push_back(std::move(Vertex(pos, col)));
+    dd.vertices.push_back(std::move(Vertex(pos, col)));
   }
   inline void AddTriangle(const Vector3& pos1, const Vector3& pos2, const Vector3& pos3, const Vector3b& col1, const Vector3b& col2, const Vector3b& col3, const float width = -1) {
     if(width < 0) {
@@ -1048,23 +835,8 @@ public:
 //    [SECTION] Engine
 // -----------------------------------------------------
 struct uiEngine {
-  vk::UniqueInstance instance;
-  VkDebugUtilsMessengerEXT callback;
-  vk::PhysicalDevice physicalDevice;
-  vk::UniqueDevice device;
-  vk::Queue graphicsQueue;
-  vk::Queue presentQueue;
   std::vector<uiWindow*> windows;
-  vk::DescriptorPool descriptorPool;
-  vk::CommandPool commandPool;
-  vk::Image TextureImage;
-  vk::DeviceMemory textureImageMemory;
-  vk::ImageView textureImageView;
-  vk::Sampler textureSampler;
-  std::vector<vk::Semaphore> imageAvailableSemaphores;
-  std::vector<vk::Semaphore> renderFinishedSemaphores;
-  std::vector<vk::Fence> inFlightFences;
-  vk::UniqueShaderModule vertexShader, fragmentShader, vertexShader_ui, fragmentShader_ui;
+  uiRenderer renderer;
 
   uiWindow *drawingWnd, *hoveringWnd, *focusedWnd;
   uiFont text_renderer;
@@ -1075,129 +847,18 @@ struct uiEngine {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   }
 
-  void initVulkan() {
-    createInstance();
-    setupDebugCallback();
-    for(int i = 0; i < windows.size(); i++) {
-      windows[i]->createSurface();
-    }
-    // createSurface();
-    pickPhysicalDevice();
-    createLogicalDevice();
-    createDescriptorPool();
-    createCommandPool();
-    createShaders();
-    createSyncObjects();
-    text_renderer.init();
-    text_renderer.setLanguage(FontLanguage::Japansese);
-    text_renderer.build();
-    createTextureImage();
-    for(int i = 0; i < windows.size(); i++) {
-      windows[i]->init();
-    }
-    std::cout << "createSyncObjects" << std::endl;
-  }
-
-  void createTextureImage();
-  void transitionImageLayout(vk::Image image, [[maybe_unused]] vk::Format format, vk::ImageLayout oldLayout, vk::ImageLayout newLayout) {
-    vk::CommandBuffer commandBuffer = beginSingleTimeCommands();
-    vk::ImageMemoryBarrier barrier{};
-    barrier.oldLayout = oldLayout;
-    barrier.newLayout = newLayout;
-    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.image = image;
-    barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-    barrier.subresourceRange.baseMipLevel = 0;
-    barrier.subresourceRange.levelCount = 1;
-    barrier.subresourceRange.baseArrayLayer = 0;
-    barrier.subresourceRange.layerCount = 1;
-
-    vk::PipelineStageFlags sourceStage;
-    vk::PipelineStageFlags destinationStage;
-
-    if(oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eTransferDstOptimal) {
-      barrier.srcAccessMask = (vk::AccessFlags)0;
-      barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
-      sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
-      destinationStage = vk::PipelineStageFlagBits::eTransfer;
-    } else if(oldLayout == vk::ImageLayout::eTransferDstOptimal && newLayout == vk::ImageLayout::eShaderReadOnlyOptimal) {
-      barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
-      barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
-      sourceStage = vk::PipelineStageFlagBits::eTransfer;
-      destinationStage = vk::PipelineStageFlagBits::eFragmentShader;
-    } else {
-      throw std::invalid_argument("unsupported layout transition!");
-    }
-
-    commandBuffer.pipelineBarrier(sourceStage, destinationStage, vk::DependencyFlags(), {}, {}, barrier);
-    endSingleTimeCommands(commandBuffer);
-  }
-
-  vk::CommandBuffer beginSingleTimeCommands() {
-    vk::CommandBufferAllocateInfo allocInfo{};
-    allocInfo.level = vk::CommandBufferLevel::ePrimary;
-    allocInfo.commandPool = commandPool;
-    allocInfo.commandBufferCount = 1;
-    vk::CommandBuffer cmdbuf;
-    try {
-      auto _commandBuffers = device->allocateCommandBuffers(allocInfo);
-      assert(_commandBuffers.size() > 0);
-      cmdbuf = _commandBuffers[0];
-    } catch(const vk::SystemError& err) {
-      throw std::runtime_error("failed to allocate command buffers!");
-    }
-
-    vk::CommandBufferBeginInfo beginInfo{};
-    beginInfo.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
-    auto result = cmdbuf.begin(&beginInfo);
-    if(result != vk::Result::eSuccess) {
-      throw std::runtime_error("failed to begine command buffer!");
-    }
-    std::cout << "begin" << std::endl;
-    return cmdbuf;
-  }
-
-  void endSingleTimeCommands(vk::CommandBuffer commandBuffer) {
-    commandBuffer.end();
-    vk::SubmitInfo submitInfo;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffer;
-
-    graphicsQueue.submit(submitInfo, nullptr);
-    graphicsQueue.waitIdle();
-    device->freeCommandBuffers(commandPool, 1, &commandBuffer);
-  }
-
   bool update(const bool verbose) {
     assert(windows.size() > 0);
     glfwPollEvents();
     for(int i = 0; i < windows.size(); i++) {
       windows[i]->drawFrame(verbose);
     }
-    device->waitIdle();
+    (*renderer.get_device_ptr())->waitIdle();
     return !windows[0]->wndShouldClose();
   }
 
   void cleanup() {
-    // NOTE: instance destruction is handled by UniqueInstance, same for device
-    // cleanupSwapChain();
-    // for(int i=0; i<windows.size(); i++;){windows[i]->cleanupSwapChainU(); } // TODO: cleanupSwapChainU
-
-    for(size_t i = 0; i < VK_ENGINE_MAX_FRAMES_IN_FLIGHT; i++) {
-      device->destroySemaphore(renderFinishedSemaphores[i]);
-      device->destroySemaphore(imageAvailableSemaphores[i]);
-      device->destroyFence(inFlightFences[i]);
-    }
-
-    device->destroyCommandPool(commandPool);
-
-    // surface is created by glfw, therefore not using a Unique handle
-    // instance->destroySurfaceKHR(surface); // TODO:
-
-#ifdef VK_ENGINE_ENABLE_VALIDATION_LAUERS
-    DestroyDebugUtilsMessengerEXT(*instance, callback, nullptr);
-#endif
+    renderer.terminate();
     // glfwDestroyWindow(window);  // TODO:
     glfwTerminate();
   }
@@ -1218,37 +879,7 @@ struct uiEngine {
     }
     return;
   }
-
-  void createCommandPool();
-  std::vector<const char*> getRequiredExtensions();
-  vk::UniqueShaderModule createShaderModule(const std::vector<char>& code);
-  bool isDeviceSuitable(const vk::PhysicalDevice& device);
-  bool checkDeviceExtensionSupport(const vk::PhysicalDevice& device);
-  QueueFamilyIndices findQueueFamilies(vk::PhysicalDevice device);
-  bool checkValidationLayerSupport();
-  void createSyncObjects();
-  void createDescriptorPool();
-  void pickPhysicalDevice();
-  void createLogicalDevice();
-  void createInstance();
-  void setupDebugCallback();
-  vk::UniqueShaderModule createShader(std::string filename);
-
   void updateVertexBuffer();
-
-  void createShaders() {
-    vertexShader = createShader("../shaders/vert.spv");
-    fragmentShader = createShader("../shaders/frag.spv");
-
-    vertexShader_ui = createShader("../shaders/vert_ui.spv");
-    fragmentShader_ui = createShader("../shaders/frag_ui.spv");
-  }
-
-  static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback([[maybe_unused]] VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, [[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT messageType,
-                                                      const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, [[maybe_unused]] void* pUserData) {
-    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
-    return VK_FALSE;
-  }
 };
 
 #define VKUI_ENGINE_API
@@ -1257,6 +888,7 @@ extern uiEngine engine;
 inline VKUI_ENGINE_API uiEngine* getContextPtr() {
   return &engine;
 }
+#if 0
 inline VKUI_ENGINE_API vk::UniqueDevice* getDevicePtr() {
   return &(engine.device);
 }
@@ -1307,6 +939,8 @@ inline VKUI_ENGINE_API auto getTextureSampler() {
 inline VKUI_ENGINE_API auto getTextureImageView() {
   return &(engine.textureSampler);
 }
+#endif
+
 
 inline VKUI_ENGINE_API auto setDrawingWindow(uiWindow* wnd) {
   return engine.drawingWnd = wnd;
@@ -1346,7 +980,7 @@ inline VKUI_ENGINE_API void init() {
 }
 inline VKUI_ENGINE_API void initFinish() {
   assert(engine.windows.size() > 0);
-  engine.initVulkan();
+  engine.renderer.init();
 }
 inline VKUI_ENGINE_API uiWindow* addWindow(std::string name, int w, int h) {
   const auto A = new uiWindow(name, w, h);
@@ -1366,6 +1000,10 @@ inline VKUI_ENGINE_API const uiStyle* getStyle() {
 }
 inline VKUI_ENGINE_API void setStyle(const uiStyle& s) {
   engine.style = s;
+}
+
+inline VKUI_ENGINE_API auto getAllWindows() {
+  return &engine.windows;
 }
 
 } // namespace vkUI::Engine

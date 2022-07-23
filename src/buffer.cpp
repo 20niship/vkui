@@ -1,6 +1,12 @@
-#include "../include/engine.hpp"
 
-namespace vkUI::Engine{
+#include <engine.hpp>
+#include <vk/internal.hpp>
+namespace vkUI::Render{
+
+const auto get_device(){return Engine::getContextPtr()->renderer.get_device_ptr();}
+const auto get_command_pool(){return Engine::getContextPtr()->renderer.get_command_pool();}
+const auto get_graphicque(){return Engine::getContextPtr()->renderer.get_graphics_queue();}
+const auto get_physical_dev(){return Engine::getContextPtr()->renderer.get_physical_device_ptr();}
 
 // -----------------------------------------------------
 //    [SECTION] uiBuffer
@@ -30,7 +36,7 @@ void uiBuffer::create(vk::DeviceSize _size, vk::BufferUsageFlags _usage, vk::Mem
 }
 
 void uiBuffer::__create(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::Buffer *buf_p, vk::DeviceMemory *mem_p) {
-    auto device = getDevicePtr();
+    auto device = get_device();
     try {
     	vk::BufferCreateInfo bufInfo{};
         bufInfo.size = size;
@@ -52,7 +58,7 @@ void uiBuffer::__create(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::Mem
 }
 
 uint32_t uiBuffer::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties) {
-    auto physicalDevice = getPhysicalDevicePtr();
+    auto physicalDevice = get_physical_dev();
     vk::PhysicalDeviceMemoryProperties memProperties = physicalDevice->getMemoryProperties();
     for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
         if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
@@ -62,7 +68,7 @@ uint32_t uiBuffer::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags p
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-void uiBuffer::copyData(void *src, size_t size){
+void uiBuffer::copyData(const void *src, const size_t size){
     if(size > buf_size ){
         cleanup();
         create(size, usage, prop);
@@ -70,13 +76,13 @@ void uiBuffer::copyData(void *src, size_t size){
     assert(allocated == true);
     
     if(use_staging_buffer){
-        auto device = getDevicePtr();
+        auto device = get_device();
         void* ptr = (*device)->mapMemory(staging_buf_mem, 0, buf_size);
         memcpy(ptr, src, size);
         (*device)->unmapMemory(staging_buf_mem);
         __copyBuffer(staging_buf, buf, buf_size);
     }else{
-        auto device = getDevicePtr();
+        auto device = get_device();
         void* ptr = (*device)->mapMemory(buf_mem, 0, buf_size);
     // result = checkVkResult(vkMapMemory(mDevice, bo.mMemory.value(), 0, VK_WHOLE_SIZE, 0, &p));
         memcpy(ptr, src, size);
@@ -85,8 +91,8 @@ void uiBuffer::copyData(void *src, size_t size){
 }
 
 vk::CommandBuffer uiBuffer::__beginSingleTimeCommands() {
-    const auto commandPool = getCommandPool();
-    const auto device = getDevicePtr();
+    const auto commandPool = get_command_pool();
+    const auto device = get_device();
     vk::CommandBufferAllocateInfo allocInfo{};
     allocInfo.level = vk::CommandBufferLevel::ePrimary;
     allocInfo.commandPool = *commandPool;
@@ -110,9 +116,9 @@ vk::CommandBuffer uiBuffer::__beginSingleTimeCommands() {
 }
 
 void uiBuffer::__endSingleTimeCommands(vk::CommandBuffer commandBuffer) {
-    const auto commandPool = getCommandPool();
-    const auto device = getDevicePtr();
-    const auto graphicsQueue = getGraphicsQueuePtr();
+    const auto commandPool = get_command_pool();
+    const auto device = get_device();
+    const auto graphicsQueue = get_graphicque();
     commandBuffer.end();
     vk::SubmitInfo submitInfo;
     submitInfo.commandBufferCount = 1;
@@ -133,7 +139,7 @@ void uiBuffer::__copyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, [[maybe_
 }
 
 void uiBuffer::cleanup(){
-    auto device = getDevicePtr();
+    auto device = get_device();
     (*device)->destroyBuffer(buf);
     (*device)->freeMemory(buf_mem);
     if(use_staging_buffer){
