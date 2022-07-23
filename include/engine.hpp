@@ -830,7 +830,7 @@ public:
   inline void AddRectPosSize(const Vector2d& pos, const Vector2d& size, const Vector3b& col) {
     AddRectTB2D(pos, pos + size, col);
   }
-  inline void AddRectPosSize(const Vector2d& p, const Vector2d& size, const Vector2d &ui1, const Vector2d &ui2, const Vector3b& col={255, 255, 255}) {
+  inline void AddRectPosSize(const Vector2d& p, const Vector2d& size, const Vector2d& ui1, const Vector2d& ui2, const Vector3b& col = {255, 255, 255}) {
     const auto top = p;
     const auto btm = p + size;
 
@@ -850,6 +850,19 @@ public:
 
     AddTriangle2D(pos[0], pos[1], pos[2], col, col, col, upos[0], upos[1], upos[2]);
     AddTriangle2D(pos[0], pos[2], pos[3], col, col, col, upos[0], upos[2], upos[3]);
+  }
+
+  inline void AddRectPosSize(const Vector2d& p, const Vector2d& size, const Vector3b& col1, const Vector3b& col2, const Vector3b& col3, const Vector3b& col4) {
+    const auto top = p;
+    const auto btm = p + size;
+    const Vector2d pos[4] = {
+      top,
+      Vector2d(top[0], btm[1]),
+      btm,
+      Vector2d(btm[0], top[1]),
+    };
+    AddTriangle2D(pos[0], pos[1], pos[2], col1, col2, col3);
+    AddTriangle2D(pos[0], pos[2], pos[3], col1, col3, col4);
   }
 
   void AddRotatedRectPosSize(const Vector2d& pos, const Vector2d& size, const double theta, const Vector3b& col);
@@ -903,6 +916,11 @@ public:
     const int h = (float)size * 0.85f;
     AddTriangle2D(pos + Vector2d{0, size}, pos + Vector2d{h, size}, pos + Vector2d{h, 0}, col);
   }
+  void AddArrowRight2D2(const Vector2d& pos, const int size, const Vector3b& col) {
+    const int h = (float)size * 0.85f;
+    AddTriangle2D(pos, pos + Vector2d{0, size}, pos + Vector2d{h, size/2}, col);
+  }
+
   void AddCrossButton(const Vector2d& pos, const int size, const Vector3b& bg_col, const Vector3b& line_col, const Vector3b& cross_col) {
     AddRectTB2D(pos, pos + size, bg_col);
     AddRectTB2D(pos, pos + size, line_col, 1);

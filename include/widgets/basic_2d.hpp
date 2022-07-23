@@ -164,6 +164,23 @@ public:
 	bool CallbackFunc(uiCallbackFlags flag, Vector2d vec2_1, int num_1, int num_2, const char **strings) override;
 };
 
+class uiCol2 : public uiWidget{
+private:
+  Vector3b *value;
+  Vector3 hsv;
+  Vector3b last_value;
+	std::string text;
+	int selecting_idx{-1};
+  int start_mouse_pos_x;
+	Vector2d _num_display_pos{0, 0};
+	Vector3 start_mouse_val;
+	// float last_value, min_value, max_value, delta_value;
+public:
+  uiCol2(const std::string &text_, Vector3b *value_);
+	void render() override;
+	bool CallbackFunc(uiCallbackFlags flag, Vector2d vec2_1, int num_1, int num_2, const char **strings) override;
+};
+
 template <typename T>
 class uiRange : public uiWidget{
 private:

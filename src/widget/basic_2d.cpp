@@ -1,10 +1,16 @@
+#include "cutil/vector.hpp"
+#include "icon.hpp"
 #include <algorithm>
 #include <cstdlib>
+#include <cutil/color.hpp>
 #include <engine.hpp>
+#include <functional>
+#include <locale>
 #include <logger.hpp>
 #include <string>
 #include <type_traits>
 #include <vector>
+#include <vulkan/vulkan_structs.hpp>
 #include <widgets/basic_2d.hpp>
 
 namespace vkUI {
@@ -765,6 +771,102 @@ bool uiCol::CallbackFunc(uiCallbackFlags flag, Vector2d vec2_1, [[maybe_unused]]
 }
 
 
+uiCol2::uiCol2(const std::string& text_, Vector3b* value_) {
+  text = text_;
+  value = value_;
+  last_value = *value_;
+  flags.EnableAutoExpandX = true;
+  flags.EnableAutoShrinkX = true;
+}
+void uiCol2::render() {
+  if(!flags.Active) {
+    needRendering(false);
+    return;
+  }
+  auto wnd = Engine::getDrawingWindow();
+  const auto style = Engine::getStyle();
+  if(*value == last_value && (!flags.needRendering)) return;
+  hsv = Cutil::RGB2HSV(*value);
+
+  constexpr int bar_color = 15;
+  const int w = std::min<int>(size[0], 300);
+
+  const Vector2d col1_top = pos + style->WidgetPadding;
+  const Vector2d col1_size(w - bar_color - style->WidgetPadding[0]*2, w);
+
+  const Vector2d col2_top = pos + Vector2d(w - bar_color, 0);
+  const Vector2d col2_size(bar_color, w);
+
+  wnd->AddRectPosSize(col1_top, col1_size, style->col_WidgetLine, 2);
+  wnd->AddRectPosSize(col2_top, col2_size, style->col_WidgetLine, 2);
+
+  constexpr int sp = 30;
+
+  const int id_e = hsv[0] * w / 360;
+  for(int i = 0; i < sp; i++) {
+    const Vector3 hsv1((double)i * 360 / sp, 100, 100);
+    const Vector3 hsv2((double)(i + 1) * 360 / sp, 100, 100);
+    const auto c1 = Cutil::HSVtoRGB(hsv1);
+    const auto c2 = Cutil::HSVtoRGB(hsv2);
+
+    const Vector2d r1 = col2_top + Vector2d(0, w * i / sp);
+    const Vector2d ds(col2_size[0], col2_size[1] / sp + 1);
+
+    wnd->AddRectPosSize(r1, ds, c1, c2, c2, c1);
+  }
+
+  {
+    const Vector2d r1_ = col2_top + Vector2d(0, id_e);
+    const Vector2d r2_ = col2_top + Vector2d(bar_color, id_e);
+    wnd->AddLine2D(r1_, r2_, {0, 0, 0}, 2);
+    wnd->AddArrowLeft2D(r2_ - Vector2d(8, 5), 10, {0, 0, 0});
+    wnd->AddArrowRight2D2(r1_ + Vector2d(0, -5), 10, {0, 0, 0});
+  }
+
+  {
+    const Vector3b c1 = Cutil::HSVtoRGB<double>({(float)hsv[0], 100.0, 0.0});
+    const Vector3b c2 = Cutil::HSVtoRGB<double>({(float)hsv[0], 100.0, 100.0});
+    const Vector3b c3 = Cutil::HSVtoRGB<double>({(float)hsv[0], 0.0, 100.0});
+    wnd->AddRectPosSize(col1_top, col1_size, c3, c1, c1, c2);
+
+    const int x = (double)col1_size[0] * hsv[1] / 100;
+    const int y = (double)col1_size[0] * (100 - hsv[2]) / 100;
+    wnd->AddCircle2D(pos + Vector2d{x, y}, 5, {255, 255, 255}, 2);
+  }
+
+  outerSize = {w, w};
+  needRendering(false);
+}
+
+bool uiCol2::CallbackFunc(uiCallbackFlags flag, Vector2d vec2_1, [[maybe_unused]] int num_1, [[maybe_unused]] int num_2, [[maybe_unused]] const char** strings) {
+  if(Engine::getFocusedWidget() != this) return false;
+
+  constexpr int bar_color = 15;
+  const int w = std::min<int>(size[0], 300);
+
+  const auto style = Engine::getStyle();
+  const Vector2d col1_top = pos + style->WidgetPadding;
+  const Vector2d col1_size(w - bar_color - style->WidgetPadding[0]*2, w);
+
+  const Vector2d col2_top = pos + Vector2d(w - bar_color, 0);
+  const Vector2d col2_size(bar_color, w);
+
+  constexpr int sp = 30;
+
+  if(flag != vkUI::uiCallbackFlags::MouseMove) return false;
+  if(num_2 != 0b01) return false;
+  
+  if(vec2_1[0] > pos[0] + w - bar_color){
+    hsv[0] = 360.0f * (vec2_1[1] - pos[1]) / w;
+    *value = Cutil::HSVtoRGB(hsv);
+    return true;
+  }else{
+    hsv[1] = 100.0f* (vec2_1[0] - col1_top[0]) / col1_size[0];
+    hsv[2] = 100.0f - 100.0 * (vec2_1[1] - col1_top[1]) / col1_size[1];
+    *value = Cutil::HSVtoRGB(hsv);
+    return true;
+  }
+}
 
 uiFrame::uiFrame(std::string text_) {
   title = text_;

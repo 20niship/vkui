@@ -56,6 +56,7 @@ int main() {
         col.AddWidget(new vkUI::uiLabel("Label seco\noge\nhogeh\nhafelaineh\noge"));
         Vector3b a;
         col.AddWidget(new vkUI::uiCol("L", &a));
+        col.AddWidget(new vkUI::uiCol2("Color", &a));
 
         frame.AddWidget({
           vkUI::Widget::Button("main", &hoge),
@@ -68,14 +69,12 @@ int main() {
         });
 
         auto frame2 = vkUI::uiFrame("plot");
-        auto frame3 = vkUI::uiTextTexture();
+        /* auto frame3 = vkUI::uiTextTexture(); */
         auto plot = vkUI::uiPlot("TITLE");
         frame2.setSize({300, 300});
-        frame3.setSize({500, 500});
         frame2.setPos({400, 10});
         frame2.AddWidget(&plot);
         wnd->addWidget2D(&frame2);
-        wnd->addWidget2D(&frame3);
 
         vkUI::Engine::initFinish();
         bool loop = true;
