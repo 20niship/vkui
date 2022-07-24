@@ -38,7 +38,7 @@ public:
   // テクスチャ作成する
   // format = GL_RGB : カラー画像、GL_COLOR_INDEX：単一の値で構成されるカラー指標
   // filter_type = GL_NEAREST, GL_LINEARがある
-  GLuint loadTexture(GLubyte* tex_data, int w, int h, GLenum format = GL_RGB, GLint filter = GL_NEAREST);
+  GLuint loadTexture(GLubyte* tex_data, int w, int h, GLenum format = GL_RGB, GLint filter = GL_NEAREST, GLuint type=GL_BITMAP);
   GLuint loadTextureFromFile(std::string filename);
   void deleteTexture(GLuint texture) {
     glDeleteTextures(1, &texture);

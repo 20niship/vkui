@@ -9,8 +9,9 @@ int main() {
     bool loop = true;
     while(loop) {
       wnd->updateVertexBuffer();
+      const auto fw = vkUI::Engine::getTextRendererPtr()->TexWidth;
+      const auto fh = vkUI::Engine::getTextRendererPtr()->TexHeight;
       wnd->drawDevelopperHelps();
-      wnd->AddLine2D({0, 0}, {500, 500}, {0, 0, 255}, {255, 0, 0});
       loop = vkUI::Engine::render();
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }

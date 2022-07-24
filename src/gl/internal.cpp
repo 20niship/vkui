@@ -78,6 +78,8 @@ void glWndRender::draw(::vkUI::Engine::glDrawData* dd) {
 
   auto textrenderer = ::vkUI::Engine::getTextRendererPtr();
   glUniform2f(uvSizeLoc, 1.0f / float(textrenderer->getTexWidth()), 1.0f / float(textrenderer->getTexHeight()));
+  disp(textrenderer->getTexWidth());
+  disp(textrenderer->getTexHeight());
 
   // disp(1.0f / float(textrenderer.getTexWidth()));
   // disp(1.0f/float(textrenderer.getTexWidth()));
@@ -87,21 +89,16 @@ void glWndRender::draw(::vkUI::Engine::glDrawData* dd) {
   glUniform1i(textureLoc, 0);
 
   glLineWidth(1.0f);
+  glPointSize(10);
   glViewport(0, 0, window_width, window_height);
 
   glClear(GL_COLOR_BUFFER_BIT);
-  glClearColor(1.0, 0.0, 0.0, 1.0);
+  glClearColor(0.0, 0.0, 0.0, 1.0);
 
   // glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei)last_scissor_box[2], (GLsizei)last_scissor_box[3]);
   auto texture_obj = getTextureRenderer();
   glBindTexture(GL_TEXTURE_2D, texture_obj->getTexID_chars());
-  /* glDrawArrays(GL_TRIANGLES, 0, dd->vertex_array.size() / 3); */
-  glPointSize(10);
   glDrawArrays(GL_TRIANGLES, 0, dd->vertex_array.size() / 3);
-  for(int i=0; i<100; i++){
-    std::cout << (int)dd->col_array[i] << "< "; 
-  }
-  std::cout << std::endl;
 
   disp(dd->vertex_array.size());
 
@@ -176,7 +173,7 @@ void glRender::init() {
   auto texture = getTextureRenderer();
 
   auto fontobj = ::vkUI::Engine::getTextRendererPtr();
-  auto idtemp = texture->loadTexture(fontobj->getData(), fontobj->getTexWidth(), fontobj->getTexHeight(), GL_COLOR_INDEX, GL_NEAREST);
+  auto idtemp = texture->loadTexture(fontobj->getData(), fontobj->getTexWidth(), fontobj->getTexHeight(), GL_LUMINANCE, GL_NEAREST, GL_UNSIGNED_BYTE);
   texture->setTexID_chars(idtemp);
 
   // shaderのセットアップ
@@ -213,7 +210,7 @@ void glRender::terminate() {
 // テクスチャ作成する
 // format = GL_RGB : カラー画像、GL_COLOR_INDEX：単一の値で構成されるカラー指標
 // filter_type = GL_NEAREST, GL_LINEARがある
-GLuint uiTexture::loadTexture(GLubyte* tex_data, int w, int h, GLenum format, GLint filter) {
+GLuint uiTexture::loadTexture(GLubyte* tex_data, int w, int h, GLenum format, GLint filter, GLuint type) {
   GLuint idTemp;
   std::cout << "loading texture... (" << w << ", " << h << ")";
   glGenTextures(1, &idTemp);
@@ -238,7 +235,7 @@ GLuint uiTexture::loadTexture(GLubyte* tex_data, int w, int h, GLenum format, GL
   // 　				GLenum format,
   // 　				GLenum type,
   // 　				const void * data);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, format, GL_BITMAP, tex_data);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, format, type, tex_data);
 
   // テクスチャを拡大縮小する時のフィルタリング方法を指定
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
@@ -312,22 +309,16 @@ void uiShader::setup() {
   vertex_shader = /* */
     "#version 130\n"
     "uniform vec2 uvsize;\n"
-    "in uvec2 position;\n"
-    "in uvec2 vuv;\n"
+    "in vec2 position;\n"
+    "in vec2 vuv;\n"
     "in uvec3 color;\n"
     "uniform mat4 projectionMatrix;\n"
     "out vec2 Frag_uv;\n"
     "out vec3 outColor;\n"
-    "float random(float u){return fract(sin(u*78.233)*43758.5453123); }\n"
     "void main(){"
-    /* "    Frag_uv= vec2(vuv.x*uvsize.x, vuv.y*uvsize.y);" */
+    "    Frag_uv= vec2(float(vuv.x)*uvsize.x, float(vuv.y)*uvsize.y);"
     "    outColor= vec3(color) / 255.0;\n"
-    /* "    gl_Position = projectionMatrix* vec4(position.xy,0,1);\n" */
-    "    gl_Position = vec4(sin(position.x * projectionMatrix[0][0] * uvsize.x * vuv.x * Frag_uv[0]), sin(position.y),0,1);\n"
-    "    gl_Position.x =outColor.x; \n"
-    "    gl_Position.y =outColor.y; \n"
-    "    gl_Position.z =0.0; \n"
-    "    gl_Position.w =1.0; \n"
+    "    gl_Position = projectionMatrix* vec4(vec2(position.xy),0.0 ,1.0);\n"
     "}\n";
 #endif
   fragment_shader = /* "#version 400\n" */
@@ -337,8 +328,12 @@ void uiShader::setup() {
     "uniform sampler2D texture;"
     "out vec4 col; \n"
     "void main(void) {"
-    /* "out = vec4(outColor, 1.0) * texture2D(texture, Frag_uv);" */
-    "col= vec4(1.0, 0., 1.0, 1.0);"
+    "  col= vec4(outColor, 1.0);"
+    "  if(Frag_uv.x != 0.0 || Frag_uv.y != 0.0){"
+    "    col.a = texture2D(texture, Frag_uv).x;"
+    "  }else{"
+    "    col.a = 1.0;"
+    "  }"
     "}\n";
 
   vs = glCreateShader(GL_VERTEX_SHADER);

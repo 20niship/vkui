@@ -123,7 +123,7 @@ using GLuint = unsigned int;
 #endif
 
 struct glDrawData {
-  uiVector<float> vertex_array;
+  uiVector<uint16_t> vertex_array;
   uiVector<uint8_t> col_array;
   uiVector<uint16_t> cord_array;
 
@@ -161,17 +161,21 @@ public:
   /*} */
 
   inline void add(const Vector2d& p, const Vector3b& c, const Vector2d& uv) {
+    /* vertex_array.push_back((float)rand() / RAND_MAX); */
+    /* vertex_array.push_back((float)rand() / RAND_MAX); */
+
+    /* col_array.push_back((float)rand() / RAND_MAX); */
+    /* col_array.push_back((float)rand() / RAND_MAX); */
+    /* col_array.push_back((float)rand() / RAND_MAX); */
+
+    /* cord_array.push_back((float)rand() / RAND_MAX); */
+    /* cord_array.push_back((float)rand() / RAND_MAX); */
+
     vertex_array.push_back(p[0]);
     vertex_array.push_back(p[1]);
-
-    col_array.push_back(rand() / 255);
-    col_array.push_back(rand() / 255);
-    col_array.push_back(rand() / 255);
-
-    /* col_array.push_back(c[0]); */
-    /* col_array.push_back(c[1]); */
-    /* col_array.push_back(c[2]); */
-
+    col_array.push_back(c[0]);
+    col_array.push_back(c[1]);
+    col_array.push_back(c[2]);
     cord_array.push_back(uv[0]);
     cord_array.push_back(uv[1]);
   }
