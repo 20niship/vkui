@@ -86,11 +86,11 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/cutil/include)
 file(GLOB VKUI_SRC_FILES 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/widget/*.cpp 
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/vk/*.cpp 
+  # ${CMAKE_CURRENT_SOURCE_DIR}/src/vk/*.cpp 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/gl/*.cpp 
   ${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/widget/*.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/vk/*.hpp
+  # ${CMAKE_CURRENT_SOURCE_DIR}/include/vk/*.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/gl/*.hpp
   ${CMAKE_SOURCE_DIR}/include/*.hpp
 )

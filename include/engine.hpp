@@ -1,6 +1,15 @@
 #pragma once
+
+#if 1
+#define GLEW_STATIC
+#include <GL/glew.h>
+/* #define GLFW_INCLUDE_VULKAN */
+#include <GLFW/glfw3.h>
+#else
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#endif
+
 #include <cmath>
 #include <limits>
 
@@ -26,12 +35,20 @@
 #include <cutil/vector.hpp>
 #include <uiCamera.hpp>
 
-/* #include <gl/internal.hpp> */
 #include <drawdata.hpp>
-#include <vk/internal.hpp>
 
+#if 0
+#include <vk/internal.hpp>
 using uiRenderer = vkUI::Render::vkRender;
 using uiWndRenderer = vkUI::Render::vkWndRender;
+using DrawData = vkUI::Engine::vkDrawData;
+#else
+#include <gl/internal.hpp>
+using uiRenderer = vkUI::Render::glRender;
+using uiWndRenderer = vkUI::Render::glWndRender;
+using DrawData = vkUI::Engine::glDrawData;
+#endif
+
 
 namespace vkUI {
 struct uiRect {
@@ -157,7 +174,6 @@ public:
   ~uiWindow();
   void drawFrame(const bool verbose = false);
   void drawDevelopperHelps();
-  inline auto getVertexPtr() { return &dd.vertices; }
   void updateVertexBuffer();
   void init();
   inline auto getGLFWwindow() const { return window; }
@@ -282,13 +298,14 @@ public:
 
   // ----------  rendering functions --------------
   inline void RemoveVerticies() {
-    dd.vertices.resize(0);
+    /* dd.vertices.resize(0); */
+    dd.clearVBOs();
   }
   inline void __AddPointSizeZero(const Vector3& pos, const Vector3b& col) {
-    dd.vertices.push_back(std::move(Vertex(pos, col)));
+    /* dd.vertices.push_back(std::move(Vertex(pos, col))); */
   }
   [[deprecated]] inline void __AddPointSizeZero(const Vector3& pos, const Vector3b& col, [[maybe_unused]] const Vector2& uv) {
-    dd.vertices.push_back(std::move(Vertex(pos, col)));
+    /* dd.vertices.push_back(std::move(Vertex(pos, col))); */
   }
   inline void AddTriangle(const Vector3& pos1, const Vector3& pos2, const Vector3& pos3, const Vector3b& col1, const Vector3b& col2, const Vector3b& col3, const float width = -1) {
     if(width < 0) {
@@ -439,7 +456,8 @@ public:
   // TODO: stackにしてpop/pushするべきかも
   void __AddPointSizeZero2D(const Vector2d& pos, const Vector3b& col);
   inline void __AddPointSizeZero2D(const Vector2d& pos, const Vector3b& col, const Vector2d& uv) {
-    dd.vertices_ui.push_back(std::move(VertexUI(pos, col, uv)));
+    /* dd.vertices_ui.push_back(std::move(VertexUI(pos, col, uv))); */
+    dd.add(pos, col, uv);
   }
 
   inline void AddTriangle2D(const Vector2d& pos1, const Vector2d& pos2, const Vector2d& pos3, const Vector3b& col1, const Vector3b& col2, const Vector3b& col3, const Vector2d& uv1,
@@ -853,7 +871,10 @@ struct uiEngine {
     for(int i = 0; i < windows.size(); i++) {
       windows[i]->drawFrame(verbose);
     }
+
+#if 0
     (*renderer.get_device_ptr())->waitIdle();
+#endif
     return !windows[0]->wndShouldClose();
   }
 
