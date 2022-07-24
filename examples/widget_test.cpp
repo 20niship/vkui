@@ -29,6 +29,9 @@ void setV() {
   }
 }
 
+int fps[100];
+
+
 int main() {
   try {
     vkUI::Engine::init();
@@ -80,8 +83,18 @@ int main() {
       wnd->AddStringBalloon("0,1000,0", {0, 1000, 0}, 1.0);
 
       wnd->drawDevelopperHelps();
+
+      for(int i=1; i<100; i++){
+        fps[i-1] = fps[i];
+      }
+      fps[99] = wnd->getFPS();
+
+      if(plot.isActive()){
+        plot.plotLine(fps, 100, {});
+        plot.plotOther();
+      }
       loop = vkUI::Engine::render();
-      /* std::this_thread::sleep_for(std::chrono::milliseconds(1000)); */
+      std::cout << fps[99] << std::endl;
     }
     vkUI::Engine::Terminate(true);
   } catch(const std::exception& e) {

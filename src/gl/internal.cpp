@@ -311,13 +311,13 @@ void uiShader::setup() {
     "uniform vec2 uvsize;\n"
     "in vec2 position;\n"
     "in vec2 vuv;\n"
-    "in uvec3 color;\n"
+    "in vec3 color;\n"
     "uniform mat4 projectionMatrix;\n"
     "out vec2 Frag_uv;\n"
     "out vec3 outColor;\n"
     "void main(){"
     "    Frag_uv= vec2(float(vuv.x)*uvsize.x, float(vuv.y)*uvsize.y);"
-    "    outColor= vec3(color) / 255.0;\n"
+    "    outColor= vec3(color) / 256.0;\n"
     "    gl_Position = projectionMatrix* vec4(vec2(position.xy),0.0 ,1.0);\n"
     "}\n";
 #endif

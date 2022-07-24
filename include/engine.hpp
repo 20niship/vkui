@@ -860,7 +860,7 @@ struct uiEngine {
   uiFont text_renderer;
   uiStyle style;
 
-  void initWindow() {
+  void init() {
     if(!glfwInit()) {
       std::cerr << "ERROR: could not start GLFW3\n";
       return;
@@ -1005,7 +1005,7 @@ inline VKUI_ENGINE_API auto getTextRendererPtr() {
 
 // initialize uiContext and create default window
 inline VKUI_ENGINE_API void init() {
-  engine.initWindow();
+  engine.init();
 }
 inline VKUI_ENGINE_API void initFinish() {
   assert(engine.windows.size() > 0);
