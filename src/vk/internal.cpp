@@ -493,9 +493,6 @@ void vkRender::init() {
   createCommandPool();
   createShaders();
   createSyncObjects();
-  engine->text_renderer.init();
-  engine->text_renderer.setLanguage(vkUI::Engine::FontLanguage::Japansese);
-  engine->text_renderer.build();
   createTextureImage();
   for(auto&& w : engine->windows) w->init();
   std::cout << "createSyncObjects" << std::endl;

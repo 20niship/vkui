@@ -59,6 +59,8 @@ IF (NOT Vulkan_FOUND)
 ENDIF()
 find_package(Threads REQUIRED)
 find_package(glfw3 3.3 REQUIRED)
+find_package(GLEW )
+
 
 if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
@@ -77,6 +79,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/vkui/include
   ${FREETYPE_INCLUDE_DIRS}
   ${Vulkan_INCLUDE_DIRS}
+  ${GLEW_INCLUDE_DIRS}
 )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/stb)
@@ -98,6 +101,7 @@ add_library(vkui ${VKUI_SRC_FILES})
 
 set(ALL_LINKS 
   glfw
+  ${GLEW_LIBRARIES}
   OpenGL::GL
   ${CMAKE_DL_LIBS}
   ${FREETYPE_LIBRARIES}

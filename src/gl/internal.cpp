@@ -1,19 +1,22 @@
-#pragma once
 #include <engine.hpp>
 #include <gl/internal.hpp>
 #include <iostream>
-
+#include <logger.hpp>
 
 namespace vkUI::Render {
 
-auto getShaderObject(){ return Engine::getContextPtr()->renderer.get_shader(); }
-auto getTextureRenderer(){ return Engine::getContextPtr()->renderer.get_texuture_renderer(); }
-
-void glWndRender::beforeRender() {
+auto getShaderObject() {
+  return Engine::getContextPtr()->renderer.get_shader();
+}
+auto getTextureRenderer() {
+  return Engine::getContextPtr()->renderer.get_texuture_renderer();
 }
 
+
 void glWndRender::draw(::vkUI::Engine::glDrawData* dd) {
-  beforeRender();
+  assert(dd->vertex_array.size() > 0);
+  assert(dd->col_array.size() > 0);
+  assert(dd->cord_array.size() > 0);
   glBindVertexArray(vao);
   glBindBuffer(GL_ARRAY_BUFFER, vertex_vbo);
   glBufferData(GL_ARRAY_BUFFER, dd->vertex_array.size_in_bytes(), (const GLvoid*)dd->vertex_array.Data, GL_STATIC_DRAW);
@@ -29,26 +32,49 @@ void glWndRender::draw(::vkUI::Engine::glDrawData* dd) {
   assert(wnd != NULL);
   glfwGetWindowSize(wnd, &window_width, &window_height);
 
+  assert(window_width > 0);
+  assert(window_height > 0);
   const float projectionMatrix[4][4] = {{2.0f / float(window_width), 0.0f, 0.0f, 0.0f}, {0.0f, -2.0f / float(window_height), 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 0.0f}, {-1.0f, 1.0f, 0.0f, 1.0f}};
 
   auto shader = getShaderObject();
-  auto projMatLoc = glGetUniformLocation(shader->getShaderID(), "projectionMatrix");
-  auto textureLoc = glGetUniformLocation(shader->getShaderID(), "texture");
-  auto uvSizeLoc = glGetUniformLocation(shader->getShaderID(), "uvSize");
+  const auto projMatLoc = glGetUniformLocation(shader->getShaderID(), "projectionMatrix");
+  const auto textureLoc = glGetUniformLocation(shader->getShaderID(), "texture");
+  const auto uvSizeLoc = glGetUniformLocation(shader->getShaderID(), "uvsize");
+
+#if 0
+  const GLuint vertLoc = 0;
+  const GLuint uvLog = 1;
+  const GLuint colLoc = 2;
+#else
+  const auto vertLoc = (GLuint)glGetAttribLocation(shader->getShaderID(), "position");
+  const auto uvLoc = (GLuint)glGetAttribLocation(shader->getShaderID(), "vuv");
+  const auto colLoc = (GLuint)glGetAttribLocation(shader->getShaderID(), "color");
+#endif
+  /* assert(vertLoc >= 0); */
+  /* assert(uvSizeLoc >= 0); */
+  /* assert(uvLoc >= 0); */
+  /* assert(colLoc >= 0); */
+  /* assert(projMatLoc >= 0); */
+  /* assert(textureLoc >= 0); */
 
   shader->EnableShader();
 
-  glEnableVertexAttribArray(0);
+  /* glEnableVertexAttribArray(0); */
+  /* glEnableVertexAttribArray(1); */
+  /* glEnableVertexAttribArray(2); */
+
+
+  glEnableVertexAttribArray(vertLoc);
   glBindBuffer(GL_ARRAY_BUFFER, vertex_vbo);
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+  glVertexAttribPointer(vertLoc, 2, GL_UNSIGNED_SHORT, GL_FALSE, 0, (GLvoid*)0);
 
-  glEnableVertexAttribArray(1);
-  glBindBuffer(GL_ARRAY_BUFFER, uv_vbo);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
-
-  glEnableVertexAttribArray(2);
+  glEnableVertexAttribArray(colLoc);
   glBindBuffer(GL_ARRAY_BUFFER, color_vbo);
-  glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+  glVertexAttribPointer(colLoc, 3, GL_UNSIGNED_BYTE, GL_FALSE, 0, (GLvoid*)0);
+
+  glEnableVertexAttribArray(uvLoc);
+  glBindBuffer(GL_ARRAY_BUFFER, uv_vbo);
+  glVertexAttribPointer(uvLoc, 2, GL_UNSIGNED_SHORT, GL_FALSE, 0, (GLvoid*)0);
 
   auto textrenderer = ::vkUI::Engine::getTextRendererPtr();
   glUniform2f(uvSizeLoc, 1.0f / float(textrenderer->getTexWidth()), 1.0f / float(textrenderer->getTexHeight()));
@@ -63,11 +89,21 @@ void glWndRender::draw(::vkUI::Engine::glDrawData* dd) {
   glLineWidth(1.0f);
   glViewport(0, 0, window_width, window_height);
 
+  glClear(GL_COLOR_BUFFER_BIT);
+  glClearColor(1.0, 0.0, 0.0, 1.0);
 
   // glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei)last_scissor_box[2], (GLsizei)last_scissor_box[3]);
   auto texture_obj = getTextureRenderer();
   glBindTexture(GL_TEXTURE_2D, texture_obj->getTexID_chars());
-  glDrawArrays(GL_QUADS, 0, dd->vertex_array.size() / 2);
+  /* glDrawArrays(GL_TRIANGLES, 0, dd->vertex_array.size() / 3); */
+  glPointSize(10);
+  glDrawArrays(GL_TRIANGLES, 0, dd->vertex_array.size() / 3);
+  for(int i=0; i<100; i++){
+    std::cout << (int)dd->col_array[i] << "< "; 
+  }
+  std::cout << std::endl;
+
+  disp(dd->vertex_array.size());
 
   // for (int order_index = 0; order_index < draw_orders.size()-1; order_index += 3) {
   // 	if (draw_orders[order_index] == CMD_LIST_DRAW_TEXTURE2D) {
@@ -87,12 +123,23 @@ void glWndRender::draw(::vkUI::Engine::glDrawData* dd) {
 
 
 void glWndRender::createSurface(GLFWwindow* glfw_window) {
-  setWindow(glfw_window);
+  assert(glfw_window != nullptr);
+  wnd = glfw_window;
   glfwMakeContextCurrent(glfw_window);
-
   // start GLEW extension handler
   glewExperimental = GL_TRUE;
-  glewInit();
+  if(glewInit() != GLEW_OK) {
+    uiLOGE << "glewInit() failed!";
+    return;
+  }
+
+  glEnable(GL_DEBUG_OUTPUT);
+  glDebugMessageCallback(
+    [](auto source, auto type, auto id, auto severity, auto length, const auto* msg, const void* userProgram) {
+      const auto t = type == GL_DEBUG_TYPE_ERROR ? "*** GL DEBUG ERROR ***" : "";
+      std::cerr << "GL CALLBACK : " << t << "type = " << type << ", severity = " << severity << ", msg -->>" << std::endl << msg << std::endl << "---- " << std::endl;
+    },
+    0);
 
   const GLubyte* renderer;
   const GLubyte* version;
@@ -128,43 +175,31 @@ void glRender::init() {
   auto shader = getShaderObject();
   auto texture = getTextureRenderer();
 
-  static bool isSetupFinished = false;
+  auto fontobj = ::vkUI::Engine::getTextRendererPtr();
+  auto idtemp = texture->loadTexture(fontobj->getData(), fontobj->getTexWidth(), fontobj->getTexHeight(), GL_COLOR_INDEX, GL_NEAREST);
+  texture->setTexID_chars(idtemp);
 
-  if(!isSetupFinished) {
-    auto fontobj = ::vkUI::Engine::getTextRendererPtr();
-    auto idtemp = texture->loadTexture(fontobj->getData(), fontobj->getTexWidth(), fontobj->getTexHeight(), GL_COLOR_INDEX, GL_NEAREST);
-    texture->setTexID_chars(idtemp);
-
-    // shaderのセットアップ
-    shader->setup();
-
-    isSetupFinished = true;
-
-    //テキストレンダラーのセットアップ
-    // switched to glUI::startApp() function in glUI.cpp
-    // auto font = ::vkUI::Engine::getTextRenderer();
-    // font->setLanguage(FontLanguage::Japansese);
-    // font->build();
+  // shaderのセットアップ
+  shader->setup();
+  //テキストレンダラーのセットアップ
+  // switched to glUI::startApp() function in glUI.cpp
+  // auto font = ::vkUI::Engine::getTextRenderer();
+  // font->setLanguage(FontLanguage::Japansese);
+  // font->build();
 
 
-    //テクスチャのセットアップ
-    // switched to glUI::startApp() function in glUI.cpp
-    // https://stackoverflow.com/questions/327642/opengl-and-monochrome-texture
-    // auto idtemp = texture->loadTexture(font->getData(), font->getTexWidth(), font->getTexHeight(), GL_COLOR_INDEX, GL_NEAREST);
-    // texture->setTexID_chars(idtemp);
-  }
+  //テクスチャのセットアップ
+  // switched to glUI::startApp() function in glUI.cpp
+  // https://stackoverflow.com/questions/327642/opengl-and-monochrome-texture
+  // auto idtemp = texture->loadTexture(font->getData(), font->getTexWidth(), font->getTexHeight(), GL_COLOR_INDEX, GL_NEAREST);
+  // texture->setTexID_chars(idtemp);
 }
 
 void glRender::terminate() {
-  std::cout << "BBB\n";
   auto shader = getShaderObject();
-  std::cout << "CCC\n";
   shader->~uiShader();
-  std::cout << "DDD\n";
   auto texture = getTextureRenderer();
-  std::cout << "EEE\n";
   texture->deleteAllTextures();
-  std::cout << "FFF\n";
   glfwTerminate();
   std::cout << "GGGG\n";
   auto textRenderer = ::vkUI::Engine::getTextRendererPtr();
@@ -257,30 +292,54 @@ void uiShader::EnableShader() {
 }
 void uiShader::setup() {
   std::cout << "shader setup...\n";
-  vertex_shader = "#version 400\n"
-                  "layout(location = 0) in vec2 position;\n"
-                  "layout(location = 1) in vec2 vuv;\n"
-                  "layout(location = 2) in vec3 color;\n"
-                  "uniform mat4 projectionMatrix;"
-                  "uniform vec2 uvSize;"
-                  "out vec2 Flag_uv;"
-                  "out vec3 outColor;"
-                  "void main(void) {"
-                  "outColor = color;"
-                  "Flag_uv = vec2(vuv.x*uvSize.x, vuv.y*uvSize.y);"
-                  //"Flag_uv = vuv;n"
-                  "gl_Position = projectionMatrix *  vec4(position, 0.0f, 1.0f);"
-                  "}\n";
-
-  fragment_shader = "#version 400\n"
-                    "in vec2 Flag_uv;"
-                    "in vec3 outColor;"
-                    "uniform sampler2D texture;"
-                    "out vec4 outFragmentColor; \n"
-                    "void main(void) {"
-                    "outFragmentColor = vec4(outColor, 1.0) * texture2D(texture, Flag_uv);"
-                    //"outFragmentColor = vec4(outColor, 1.0) * texture2D(texture, Flag_uv); n"
-                    "}\n";
+#if 0
+  vertex_shader = /* "#version 400\n" */
+    "#version 130\n"
+    "layout(location = 0) in vec2 position;\n"
+    "layout(location = 1) in vec2 vuv;\n"
+    "layout(location = 2) in vec3 color;\n"
+    "uniform mat4 projectionMatrix;"
+    "uniform vec2 uvsize;"
+    "out vec2 Frag_uv;"
+    "out vec3 outColor;"
+    "void main(void) {"
+    "outColor = color;"
+    "Frag_uv= vec2(vuv.x*uvsize.x, vuv.y*uvsize.y);"
+    //"Frag_uv= vuv;n"
+    "gl_Position = projectionMatrix *  vec4(position, 0.0f, 1.0f);"
+    "}\n";
+#else
+  vertex_shader = /* */
+    "#version 130\n"
+    "uniform vec2 uvsize;\n"
+    "in uvec2 position;\n"
+    "in uvec2 vuv;\n"
+    "in uvec3 color;\n"
+    "uniform mat4 projectionMatrix;\n"
+    "out vec2 Frag_uv;\n"
+    "out vec3 outColor;\n"
+    "float random(float u){return fract(sin(u*78.233)*43758.5453123); }\n"
+    "void main(){"
+    /* "    Frag_uv= vec2(vuv.x*uvsize.x, vuv.y*uvsize.y);" */
+    "    outColor= vec3(color) / 255.0;\n"
+    /* "    gl_Position = projectionMatrix* vec4(position.xy,0,1);\n" */
+    "    gl_Position = vec4(sin(position.x * projectionMatrix[0][0] * uvsize.x * vuv.x * Frag_uv[0]), sin(position.y),0,1);\n"
+    "    gl_Position.x =outColor.x; \n"
+    "    gl_Position.y =outColor.y; \n"
+    "    gl_Position.z =0.0; \n"
+    "    gl_Position.w =1.0; \n"
+    "}\n";
+#endif
+  fragment_shader = /* "#version 400\n" */
+    "#version 130\n"
+    "in vec2 Frag_uv;"
+    "in vec3 outColor;"
+    "uniform sampler2D texture;"
+    "out vec4 col; \n"
+    "void main(void) {"
+    /* "out = vec4(outColor, 1.0) * texture2D(texture, Frag_uv);" */
+    "col= vec4(1.0, 0., 1.0, 1.0);"
+    "}\n";
 
   vs = glCreateShader(GL_VERTEX_SHADER);
   glShaderSource(vs, 1, &vertex_shader, NULL);
@@ -292,18 +351,19 @@ void uiShader::setup() {
 
   shader_id = glCreateProgram();
 
-
   GLint success = 0;
   glGetShaderiv(vs, GL_COMPILE_STATUS, &success);
   if(success == GL_FALSE) {
-    std::cerr << "[ERROR] Vertex shader Compile Failed\n";
+    uiLOGE << "[ERROR] Vertex shader Compile Failed\n";
+    exit(0);
   } else {
     std::cout << "vertex Shader compile success!!\n";
   }
 
   glGetShaderiv(fs, GL_COMPILE_STATUS, &success);
   if(success == GL_FALSE) {
-    std::cerr << "フラグメントシェーダー作成に失敗！！";
+    uiLOGE << "[ERROR] Fragment shader Compile Failed\n";
+    exit(0);
   } else {
     std::cout << "fragment Shader compile success!!\n";
   }

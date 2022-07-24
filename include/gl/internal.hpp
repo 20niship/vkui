@@ -1,7 +1,7 @@
 #pragma once
 #include <cutil/vector.hpp>
-#include <gl/internal.hpp>
 #include <drawdata.hpp>
+#include <gl/internal.hpp>
 #include <iostream>
 
 #define GLEW_STATIC
@@ -64,16 +64,15 @@ private:
   void beforeRender();
 
 public:
-  glWndRender();
-  ~glWndRender();
+  glWndRender() = default;
+  ~glWndRender() = default;
   void clearVBOs();
-  void setWindow(GLFWwindow* hwnd);
   void Render();
 
   /* inline int getCmdNum() { return vertex_array.size(); } */
 
   void init();
-  void update_wndsize();
+  void update_wndsize() {}
   void draw(::vkUI::Engine::glDrawData* dd);
   void terminate();
   void createSurface(GLFWwindow* window);
@@ -88,8 +87,8 @@ private:
 public:
   void init();
   void terminate();
-  auto get_shader(){ return &shader; }
-  auto get_texuture_renderer(){ return &texture_renderer; }
+  auto get_shader() { return &shader; }
+  auto get_texuture_renderer() { return &texture_renderer; }
 };
 
 } // namespace vkUI::Render

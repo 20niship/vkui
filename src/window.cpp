@@ -38,8 +38,17 @@ uiWindow::uiWindow(std::string _name, uint16_t width, uint16_t height) {
   glfwSetCharCallback(window, charCB_static);
   glfwSetMouseButtonCallback(window, mouseButtonCB_static);
   currentFrame = 0;
+  renderer.createSurface(window);
 
   user_key_cb = [](int a, int b, int c, int d, Vector2 f) { return true; };
+
+  renderer.init();
+  updateUniformBuffer();
+  updateVertexBuffer();
+  cursors.init();
+  root_widget_ui.needRendering(true);
+  root_widget_ui.impl_needCalcAlignment_child();
+  root_widget_ui.impl_needCalcInnerSize_parent();
 }
 
 void uiWindow::renderUI() {
@@ -48,19 +57,19 @@ void uiWindow::renderUI() {
   root_widget_ui.applyAlignment_recursive();
   // if(root_widget_ui.getNeedRendering()){
   root_widget_ui.needRendering(true);
-  dd.vertices_ui.resize(0);
+  dd.clear();
   root_widget_ui.render_child_widget();
   // }
-  if(dd.vertices_ui.size() == 0) {
-    dd.vertices_ui.push_back(VertexUI(Vector2{0, 0}, Vector3b{0, 0, 0}, Vector2{0, 0}));
-    dd.vertices_ui.push_back(VertexUI(Vector2{0, 0}, Vector3b{0, 0, 0}, Vector2{0, 0}));
-    dd.vertices_ui.push_back(VertexUI(Vector2{0, 0}, Vector3b{0, 0, 0}, Vector2{0, 0}));
+  if(dd.get_n_vertices_ui() == 0) {
+    dd.add({0, 0}, {0, 0, 0}, {0, 0});
+    dd.add({0, 0}, {0, 0, 0}, {0, 0});
+    dd.add({0, 0}, {0, 0, 0}, {0, 0});
   }
 }
 
 void uiWindow::updateVertexBuffer() {
   setDrawingWindow(this);
-  dd.vertices.resize(0);
+  dd.clear();
   /* renderer.updateVertexBuffer(); */
   root_widget.render();
   renderUI();
@@ -106,7 +115,7 @@ void uiWindow::drawDevelopperHelps() {
 #else
   const std::string str = myFormat(
 #endif
-    "vert_size = ({}, {}), drawCmd={} nWidget={}, fps={}", dd.vertices.size(), dd.vertices_ui.size(), nCmd, wsize, fps);
+    "vert_size = ({}, {}), drawCmd={} nWidget={}, fps={}", dd.get_n_vertices_ui(), dd.get_n_vertices_ui(), nCmd, wsize, fps);
   AddString2D(str, {10, 10}, 1, {255, 0, 255});
 
   const auto focused = root_widget_ui.getFocusedWidget();
@@ -130,20 +139,12 @@ void uiWindow::drawFrame(const bool verbose) {
   start_time_fps = now;
   // frames_in_sec++;
 #endif
+  glfwSwapBuffers(window);
 
   currentFrame++;
 }
 
-
-
 void uiWindow::init() {
-  renderer.init();
-  updateUniformBuffer();
-  updateVertexBuffer();
-  cursors.init();
-  root_widget_ui.needRendering(true);
-  root_widget_ui.impl_needCalcAlignment_child();
-  root_widget_ui.impl_needCalcInnerSize_parent();
 }
 
 void uiWindow::mouseCB(double x, double y) {
@@ -580,7 +581,8 @@ void uiWindow::AddStringBalloon2D(const std::string& str, const Vector2d& to, co
 // ----------------------------------------------------------------
 void uiWindow::__AddPointSizeZero2D(const Vector2d& pos, const Vector3b& col) {
   const auto text_renderer = getTextRendererPtr();
-  dd.vertices_ui.push_back(std::move(VertexUI(pos, col, text_renderer->TexUvWhitePixel)));
+  /* dd.vertices_ui.push_back(std::move(VertexUI(pos, col, text_renderer->TexUvWhitePixel))); */
+  dd.add(pos, col, text_renderer->TexUvWhitePixel);
 }
 
 Vector2d uiWindow::AddString2D(const std::string& str, const Vector2d& pos, const float size, const Vector3b& col, const int xlim) {

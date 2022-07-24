@@ -299,7 +299,7 @@ public:
   // ----------  rendering functions --------------
   inline void RemoveVerticies() {
     /* dd.vertices.resize(0); */
-    dd.clearVBOs();
+    dd.clear();
   }
   inline void __AddPointSizeZero(const Vector3& pos, const Vector3b& col) {
     /* dd.vertices.push_back(std::move(Vertex(pos, col))); */
@@ -861,8 +861,17 @@ struct uiEngine {
   uiStyle style;
 
   void initWindow() {
-    glfwInit();
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    if(!glfwInit()) {
+      std::cerr << "ERROR: could not start GLFW3\n";
+      return;
+    }
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    /* glfwInit(); */
+    /* glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); */
+    text_renderer.init();
+    text_renderer.setLanguage(vkUI::Engine::FontLanguage::Japansese);
+    text_renderer.build();
   }
 
   bool update(const bool verbose) {
@@ -871,7 +880,6 @@ struct uiEngine {
     for(int i = 0; i < windows.size(); i++) {
       windows[i]->drawFrame(verbose);
     }
-
 #if 0
     (*renderer.get_device_ptr())->waitIdle();
 #endif

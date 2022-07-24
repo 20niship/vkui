@@ -10,7 +10,6 @@
 #include <string>
 #include <type_traits>
 #include <vector>
-#include <vulkan/vulkan_structs.hpp>
 #include <widgets/basic_2d.hpp>
 
 namespace vkUI {
