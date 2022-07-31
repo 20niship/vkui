@@ -58,7 +58,7 @@ class glWndRender {
 private:
   GLuint vao;
   GLFWwindow* wnd;
-  GLuint vertex_vbo{0}, color_vbo{0}, uv_vbo{0};
+  GLuint vbo, vbo_ui;
   void cleanupSwapChain();
   void recreateSwapChain();
   void beforeRender();

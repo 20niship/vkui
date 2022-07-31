@@ -72,7 +72,7 @@ int main() {
     frame2.setSize({300, 300});
     frame2.setPos({400, 10});
     frame2.AddWidget(&plot);
-    wnd->addWidget2D(&frame2);
+    /* wnd->addWidget2D(&frame2); */
 
     vkUI::Engine::initFinish();
     bool loop = true;

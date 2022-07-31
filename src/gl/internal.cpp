@@ -18,6 +18,7 @@ void glWndRender::draw(::vkUI::Engine::glDrawData* dd) {
   assert(dd->col_array.size() > 0);
   assert(dd->cord_array.size() > 0);
   glBindVertexArray(vao);
+#if 0
   glBindBuffer(GL_ARRAY_BUFFER, vertex_vbo);
   glBufferData(GL_ARRAY_BUFFER, dd->vertex_array.size_in_bytes(), (const GLvoid*)dd->vertex_array.Data, GL_STATIC_DRAW);
 
@@ -26,6 +27,12 @@ void glWndRender::draw(::vkUI::Engine::glDrawData* dd) {
 
   glBindBuffer(GL_ARRAY_BUFFER, uv_vbo);
   glBufferData(GL_ARRAY_BUFFER, dd->cord_array.size_in_bytes(), (const GLvoid*)dd->cord_array.Data, GL_STATIC_DRAW);
+#endif
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBufferData(GL_ARRAY_BUFFER, dd->vertices.size_in_bytes(), (const GLvoid*)dd->vertices.Data, GL_STATIC_DRAW);
+
+  glBindBuffer(GL_ARRAY_BUFFER, vbo_ui);
+  glBufferData(GL_ARRAY_BUFFER, dd->vertices_ui.size_in_bytes(), (const GLvoid*)dd->vertices_ui.Data, GL_STATIC_DRAW);
 
   int window_width, window_height;
   assert(wnd != nullptr);
@@ -62,8 +69,7 @@ void glWndRender::draw(::vkUI::Engine::glDrawData* dd) {
   /* glEnableVertexAttribArray(0); */
   /* glEnableVertexAttribArray(1); */
   /* glEnableVertexAttribArray(2); */
-
-
+#if 0
   glEnableVertexAttribArray(vertLoc);
   glBindBuffer(GL_ARRAY_BUFFER, vertex_vbo);
   glVertexAttribPointer(vertLoc, 2, GL_UNSIGNED_SHORT, GL_FALSE, 0, (GLvoid*)0);
@@ -75,15 +81,23 @@ void glWndRender::draw(::vkUI::Engine::glDrawData* dd) {
   glEnableVertexAttribArray(uvLoc);
   glBindBuffer(GL_ARRAY_BUFFER, uv_vbo);
   glVertexAttribPointer(uvLoc, 2, GL_UNSIGNED_SHORT, GL_FALSE, 0, (GLvoid*)0);
+#endif
+  glEnableVertexAttribArray(vertLoc);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo_ui);
+  glVertexAttribPointer(vertLoc, 2, GL_UNSIGNED_SHORT, GL_FALSE, sizeof(Engine::vkVertexUI), (GLvoid *)Engine::vkVertexUI::get_offset_pos());
+
+  glEnableVertexAttribArray(colLoc);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo_ui);
+  glVertexAttribPointer(colLoc, 3, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(Engine::vkVertexUI), (GLvoid *)Engine::vkVertexUI::get_offset_col());
+
+  glEnableVertexAttribArray(uvLoc);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo_ui);
+  glVertexAttribPointer(uvLoc, 2, GL_UNSIGNED_SHORT, GL_FALSE, sizeof(Engine::vkVertexUI), (GLvoid *)Engine::vkVertexUI::get_offset_uv());
 
   auto textrenderer = ::vkUI::Engine::getTextRendererPtr();
   glUniform2f(uvSizeLoc, 1.0f / float(textrenderer->getTexWidth()), 1.0f / float(textrenderer->getTexHeight()));
   disp(textrenderer->getTexWidth());
   disp(textrenderer->getTexHeight());
-
-  // disp(1.0f / float(textrenderer.getTexWidth()));
-  // disp(1.0f/float(textrenderer.getTexWidth()));
-  // disp(vertex_array.size());
 
   glUniformMatrix4fv(projMatLoc, 1, GL_FALSE, &projectionMatrix[0][0]);
   glUniform1i(textureLoc, 0);
@@ -98,9 +112,7 @@ void glWndRender::draw(::vkUI::Engine::glDrawData* dd) {
   // glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei)last_scissor_box[2], (GLsizei)last_scissor_box[3]);
   auto texture_obj = getTextureRenderer();
   glBindTexture(GL_TEXTURE_2D, texture_obj->getTexID_chars());
-  glDrawArrays(GL_TRIANGLES, 0, dd->vertex_array.size() / 3);
-
-  disp(dd->vertex_array.size());
+  glDrawArrays(GL_TRIANGLES, 0, dd->vertices_ui.size() / 3);
 
   // for (int order_index = 0; order_index < draw_orders.size()-1; order_index += 3) {
   // 	if (draw_orders[order_index] == CMD_LIST_DRAW_TEXTURE2D) {
@@ -156,9 +168,8 @@ void glWndRender::createSurface(GLFWwindow* glfw_window) {
 }
 
 void glWndRender::terminate() {
-  glDeleteBuffers(1, &vertex_vbo);
-  glDeleteBuffers(1, &color_vbo);
-  glDeleteBuffers(1, &uv_vbo);
+  glDeleteBuffers(1, &vbo);
+  glDeleteBuffers(1, &vbo_ui);
   glDeleteVertexArrays(1, &vao);
 }
 
@@ -166,9 +177,8 @@ void glWndRender::terminate() {
 void glWndRender::init() {
   std::cout << "genbuffer called!" << std::endl;
   glGenVertexArrays(1, &vao);
-  glGenBuffers(1, &vertex_vbo);
-  glGenBuffers(1, &color_vbo);
-  glGenBuffers(1, &uv_vbo);
+  glGenBuffers(1, &vbo);
+  glGenBuffers(1, &vbo_ui);
 }
 
 

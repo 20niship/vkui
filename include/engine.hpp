@@ -121,7 +121,6 @@ private:
   ::vkUI::uiRect clipping_rect{0, 0, 99999, 999999};
   KeyboardFuncT user_key_cb;
   void updateUniformBuffer();
-  void renderUI();
 
 public:
   struct _wndStyle {

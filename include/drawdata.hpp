@@ -9,7 +9,7 @@
 #define VK_ENGINE_MAX_FRAMES_IN_FLIGHT 2
 #define VK_ENGINE_ENABLE_VALIDATION_LAYERS
 #define VKUI_ENGINE_ENABLE_FPS_CALC
-#define VKUI_ENGINE_USE_FLOAT_VERTEX
+/* #define VKUI_ENGINE_USE_FLOAT_VERTEX */
 
 
 namespace vkUI::Render {
@@ -122,6 +122,7 @@ struct vkDrawData {
 
 
 
+#if  0
 #ifndef GLuint
 using GLuint = unsigned int;
 #endif
@@ -216,5 +217,8 @@ public:
   auto get_n_commands() const { return drawlist.size(); }
 };
 
+#endif 
+
+using glDrawData = vkDrawData;
 
 } // namespace vkUI::Engine

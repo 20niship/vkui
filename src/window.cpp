@@ -51,28 +51,26 @@ uiWindow::uiWindow(std::string _name, uint16_t width, uint16_t height) {
   uiLOGI << "constructor end";
 }
 
-void uiWindow::renderUI() {
+
+void uiWindow::updateVertexBuffer() {
   setDrawingWindow(this);
+  /* renderer.updateVertexBuffer(); */
   root_widget_ui.calcInnerSize_recursize();
   root_widget_ui.applyAlignment_recursive();
   // if(root_widget_ui.getNeedRendering()){
   root_widget_ui.needRendering(true);
+
   dd.clear();
+  root_widget.render();
   root_widget_ui.render_child_widget();
-  // }
+
+#if 0
   if(dd.get_n_vertices_ui() == 0) {
     dd.add({0, 0}, {0, 0, 0}, {0, 0});
     dd.add({0, 0}, {0, 0, 0}, {0, 0});
     dd.add({0, 0}, {0, 0, 0}, {0, 0});
   }
-}
-
-void uiWindow::updateVertexBuffer() {
-  setDrawingWindow(this);
-  dd.clear();
-  /* renderer.updateVertexBuffer(); */
-  root_widget.render();
-  renderUI();
+#endif
 }
 
 void uiWindow::updateUniformBuffer() {
@@ -115,7 +113,7 @@ void uiWindow::drawDevelopperHelps() {
 #else
   const std::string str = myFormat(
 #endif
-    "vert_size = ({}, {}), drawCmd={} nWidget={}, fps={}", dd.get_n_vertices_ui(), dd.get_n_vertices_ui(), nCmd, wsize, fps);
+    "vert_size = (3d = {}, ui = {}), drawCmd={} nWidget={}, fps={}", dd.get_n_vertices_ui(), dd.get_n_vertices(), nCmd, wsize, fps);
   AddString2D(str, {10, 10}, 1, {255, 0, 255});
 
   const auto focused = root_widget_ui.getFocusedWidget();
