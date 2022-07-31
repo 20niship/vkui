@@ -138,7 +138,7 @@ set(ALL_LINKS
 if(RENDERER STREQUAL "WITH_VULKAN")
   set(ALL_LINKS ${ALL_LINKS} ${Vulkan_LIBRARIES})
 else()
-  # set(ALL_LINKS ${ALL_LINKS} OpenGL::GL ${GLEW_LIBRARIES})
+  set(ALL_LINKS ${ALL_LINKS} OpenGL::GL ${GLEW_LIBRARIES})
 endif()
 
 target_link_libraries(vkui ${ALL_LINKS})

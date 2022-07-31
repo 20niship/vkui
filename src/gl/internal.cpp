@@ -135,6 +135,9 @@ void glWndRender::createSurface(GLFWwindow* glfw_window) {
     [](auto source, auto type, auto id, auto severity, auto length, const auto* msg, const void* userProgram) {
       const auto t = type == GL_DEBUG_TYPE_ERROR ? "*** GL DEBUG ERROR ***" : "";
       std::cerr << "GL CALLBACK : " << t << "type = " << type << ", severity = " << severity << ", msg -->>" << std::endl << msg << std::endl << "---- " << std::endl;
+      if(type == GL_DEBUG_TYPE_ERROR) {
+        throw std::runtime_error("OpenGL Callback ERrror!");
+      }
     },
     0);
 
@@ -161,6 +164,7 @@ void glWndRender::terminate() {
 
 
 void glWndRender::init() {
+  std::cout << "genbuffer called!" << std::endl;
   glGenVertexArrays(1, &vao);
   glGenBuffers(1, &vertex_vbo);
   glGenBuffers(1, &color_vbo);
@@ -169,6 +173,10 @@ void glWndRender::init() {
 
 
 void glRender::init() {
+  const auto engine = ::vkUI::Engine::getContextPtr();
+  for(auto&& w : engine->windows) w->get_renderer()->createSurface(w->getGLFWwindow());
+  for(auto&& w : engine->windows) w->init();
+
   auto shader = getShaderObject();
   auto texture = getTextureRenderer();
 
