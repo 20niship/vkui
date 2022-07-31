@@ -38,17 +38,17 @@ uiWindow::uiWindow(std::string _name, uint16_t width, uint16_t height) {
   glfwSetCharCallback(window, charCB_static);
   glfwSetMouseButtonCallback(window, mouseButtonCB_static);
   currentFrame = 0;
-  renderer.createSurface(window);
-
   user_key_cb = [](int a, int b, int c, int d, Vector2 f) { return true; };
-
-  renderer.init();
+  uiLOGI << "updateUniformBuffer";
   updateUniformBuffer();
+  uiLOGI << "vertexbuffer";
   updateVertexBuffer();
+  uiLOGI << "cursor init";
   cursors.init();
   root_widget_ui.needRendering(true);
   root_widget_ui.impl_needCalcAlignment_child();
   root_widget_ui.impl_needCalcInnerSize_parent();
+  uiLOGI << "constructor end";
 }
 
 void uiWindow::renderUI() {
@@ -126,6 +126,7 @@ void uiWindow::drawDevelopperHelps() {
 
 void uiWindow::drawFrame(const bool verbose) {
   setDrawingWindow(this);
+  updateUniformBuffer();
   dd.push();
   dd.sort();
   renderer.draw(&dd);
@@ -145,6 +146,9 @@ void uiWindow::drawFrame(const bool verbose) {
 }
 
 void uiWindow::init() {
+  std::cout << "uiWIndow init" << std::endl;
+  renderer.init();
+  std::cout << "uiWIndow init end" << std::endl;
 }
 
 void uiWindow::mouseCB(double x, double y) {

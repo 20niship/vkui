@@ -1,13 +1,20 @@
 #pragma once
 
-#if 1
-#define GLEW_STATIC
+#ifdef WITH_OPENGL // CmakeListsをみてね
+#define GLEW_STATIS
 #include <GL/glew.h>
-/* #define GLFW_INCLUDE_VULKAN */
 #include <GLFW/glfw3.h>
+#include <gl/internal.hpp>
+using uiRenderer = vkUI::Render::glRender;
+using uiWndRenderer = vkUI::Render::glWndRender;
+using DrawData = vkUI::Engine::glDrawData;
 #else
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include <vk/internal.hpp>
+using uiRenderer = vkUI::Render::vkRender;
+using uiWndRenderer = vkUI::Render::vkWndRender;
+using DrawData = vkUI::Engine::vkDrawData;
 #endif
 
 #include <cmath>
@@ -29,25 +36,12 @@
 #include <vector>
 #include FT_FREETYPE_H
 
-#include "enums.hpp"
-#include "stb/stb_image.h"
-#include "widget.hpp"
 #include <cutil/vector.hpp>
-#include <uiCamera.hpp>
-
 #include <drawdata.hpp>
-
-#if 0
-#include <vk/internal.hpp>
-using uiRenderer = vkUI::Render::vkRender;
-using uiWndRenderer = vkUI::Render::vkWndRender;
-using DrawData = vkUI::Engine::vkDrawData;
-#else
-#include <gl/internal.hpp>
-using uiRenderer = vkUI::Render::glRender;
-using uiWndRenderer = vkUI::Render::glWndRender;
-using DrawData = vkUI::Engine::glDrawData;
-#endif
+#include <enums.hpp>
+#include <stb_image.h>
+#include <uiCamera.hpp>
+#include <widget.hpp>
 
 
 namespace vkUI {
@@ -865,10 +859,12 @@ struct uiEngine {
       std::cerr << "ERROR: could not start GLFW3\n";
       return;
     }
+#ifdef WITH_OPENGL
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    /* glfwInit(); */
-    /* glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); */
+#else
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+#endif
     text_renderer.init();
     text_renderer.setLanguage(vkUI::Engine::FontLanguage::Japansese);
     text_renderer.build();

@@ -37,6 +37,7 @@ struct uiBuffer {
   vk::CommandBuffer __beginSingleTimeCommands();
   void __endSingleTimeCommands(vk::CommandBuffer commandBuffer);
   void __copyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
+  bool iscreated(){return allocated;}
 
   void copyData(const void* src, const size_t size);
   void cleanup();
@@ -61,6 +62,7 @@ private:
   void cleanupSwapChain();
   void recreateSwapChain();
 
+  void createUniformBuffer();
   void createSwapChain();
   void createImageViews();
   void createRenderPass();
@@ -175,7 +177,7 @@ private:
   std::vector<vk::Fence> inFlightFences;
   vk::UniqueShaderModule vertexShader, fragmentShader, vertexShader_ui, fragmentShader_ui;
 
-
+  void createInstance();
   void createCommandPool();
   std::vector<const char*> getRequiredExtensions();
   vk::UniqueShaderModule createShaderModule(const std::vector<char>& code);
@@ -186,7 +188,6 @@ private:
   void createDescriptorPool();
   void pickPhysicalDevice();
   void createLogicalDevice();
-  void createInstance();
   void setupDebugCallback();
   vk::UniqueShaderModule createShader(std::string filename);
 
@@ -274,6 +275,7 @@ private:
   }
 
 public:
+  vkRender();
   void init();
   void terminate();
   auto get_device_ptr() { return &device; }

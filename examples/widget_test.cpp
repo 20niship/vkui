@@ -4,8 +4,7 @@
 #include <widgets/basic.hpp>
 #include <widgets/basic_2d.hpp>
 #include <widgets/plot.hpp>
-#include <chrono>
-#include <thread>
+#include <logger.hpp>
 
 using namespace vkUI;
 using namespace vkUI::Engine;
@@ -35,6 +34,7 @@ int fps[100];
 int main() {
   try {
     vkUI::Engine::init();
+    uiLOGE << "Engine::init Finished!"; 
     auto wnd = vkUI::Engine::addWindow("test", 640, 480);
     auto coord = vkUI::uiCoordinate({0, 0, 0}, 500);
     wnd->addWidget(&coord);

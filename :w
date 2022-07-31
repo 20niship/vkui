@@ -1204,20 +1204,19 @@ void vkWndRender::draw(vkUI::Engine::vkDrawData* dd) {
   auto currentFrame_2 = currentFrame % VK_ENGINE_MAX_FRAMES_IN_FLIGHT;
   const bool verbose = true;
   {
-    if(dd->vertices.size() == 0) {
-      dd->vertices.push_back(Engine::vkVertex({0, 0, 0}, {0, 0, 0}));
-      dd->vertices.push_back(Engine::vkVertex({0, 0, 0}, {0, 0, 0}));
-      dd->vertices.push_back(Engine::vkVertex({0, 0, 0}, {0, 0, 0}));
-    }
-
-    if(dd->vertices_ui.size() == 0) {
-      dd->vertices_ui.push_back(Engine::vkVertexUI({0, 0}, {0, 0, 0}, {0, 0}));
-      dd->vertices_ui.push_back(Engine::vkVertexUI({0, 0}, {0, 0, 0}, {0, 0}));
-      dd->vertices_ui.push_back(Engine::vkVertexUI({0, 0}, {0, 0, 0}, {0, 0}));
-    }
-
-    static bool _created_vertex_buffer = false;
     if(!_created_vertex_buffer) {
+      if(dd->vertices.size() == 0) {
+        dd->vertices.push_back(Engine::vkVertex({0, 0, 0}, {0, 0, 0}));
+        dd->vertices.push_back(Engine::vkVertex({0, 0, 0}, {0, 0, 0}));
+        dd->vertices.push_back(Engine::vkVertex({0, 0, 0}, {0, 0, 0}));
+      }
+
+      if(dd->vertices_ui.size() == 0) {
+        dd->vertices_ui.push_back(Engine::vkVertexUI({0, 0}, {0, 0, 0}, {0, 0}));
+        dd->vertices_ui.push_back(Engine::vkVertexUI({0, 0}, {0, 0, 0}, {0, 0}));
+        dd->vertices_ui.push_back(Engine::vkVertexUI({0, 0}, {0, 0, 0}, {0, 0}));
+      }
+      static bool _created_vertex_buffer = false;
       const vk::DeviceSize bufferSize = dd->vertices.size_in_bytes();
       vertexBuffer.create(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
       const vk::DeviceSize bufferSize2 = dd->vertices_ui.size_in_bytes();

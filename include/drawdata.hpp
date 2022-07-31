@@ -1,6 +1,4 @@
 #pragma once
-
-
 #include <cutil/vector.hpp>
 #include <functional>
 #include <vector>
@@ -70,7 +68,7 @@ struct vkVertexUI {
   static auto get_offset_col() { return offsetof(vkVertexUI, col); }
   static auto get_offset_uv() { return offsetof(vkVertexUI, uv); }
 
-  template <typename T> vkVertexUI(const _Vec<T, 2>& _pos, const Vector3b& _col, const _Vec<T, 2>& _uv) {
+  vkVertexUI(const Vector2d& _pos, const Vector3b& _col, const Vector2d& _uv) {
     pos[0] = _pos[0];
     pos[1] = _pos[1];
     col[0] = _col[0];
@@ -114,6 +112,12 @@ struct vkDrawData {
   auto sort() {
     std::sort(drawlist.begin(), drawlist.end(), [](const auto& x, const auto& y) { return x.z_index < y.z_index; });
   }
+  inline void add(const Vector2d& p, const Vector3b& c, const Vector2d& uv) {
+    vertices_ui.push_back(std::move(vkVertexUI{p, c, uv}));
+  }
+  auto get_n_vertices_ui() const { return vertices_ui.size(); }
+  auto get_n_vertices() const { return vertices.size(); }
+  auto get_n_commands() const { return drawlist.size(); }
 };
 
 
