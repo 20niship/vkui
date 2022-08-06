@@ -68,7 +68,7 @@ private:
   void createRenderPass();
   void createDescriptorSetLayout();
   void createGraphicsPipeline();
-  void createCommandBuffers(const Engine::vkDrawData*);
+  void createCommandBuffers(const DrawData*);
   void createFramebuffers();
   void createGraphicsPipeline_UI();
   vk::SurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
@@ -79,7 +79,7 @@ private:
   static vk::VertexInputBindingDescription getBindingDescription() {
     vk::VertexInputBindingDescription bindingDescription = {};
     bindingDescription.binding = 0;
-    bindingDescription.stride = sizeof(Engine::vkVertex);
+    bindingDescription.stride = sizeof(Vertex);
     bindingDescription.inputRate = vk::VertexInputRate::eVertex;
     return bindingDescription;
   }
@@ -93,12 +93,12 @@ private:
 #else
     attributeDescriptions[0].format = vk::Format::eR16G16B16Sint;
 #endif
-    attributeDescriptions[0].offset = Engine::vkVertex::get_offset_pos();
+    attributeDescriptions[0].offset = Vertex::get_offset_pos();
 
     attributeDescriptions[1].binding = 0;
     attributeDescriptions[1].location = 1;
     attributeDescriptions[1].format = vk::Format::eR8G8B8Uint;
-    attributeDescriptions[1].offset = Engine::vkVertex::get_offset_col();
+    attributeDescriptions[1].offset = Vertex::get_offset_col();
 
     //         attributeDescriptions[2].binding = 0;
     //         attributeDescriptions[2].location = 2;
@@ -107,7 +107,7 @@ private:
     // #else
     //         attributeDescriptions[2].format = vk::Format::eR16G16Uint;
     // #endif
-    //         attributeDescriptions[2].offset = offsetof(vkVertex, uv);
+    //         attributeDescriptions[2].offset = offsetof(Vertex, uv);
     return attributeDescriptions;
   }
 
@@ -115,7 +115,7 @@ private:
   static vk::VertexInputBindingDescription getBindingDescription_UI() {
     vk::VertexInputBindingDescription bindingDescription = {};
     bindingDescription.binding = 0;
-    bindingDescription.stride = sizeof(Engine::vkVertexUI);
+    bindingDescription.stride = sizeof(VertexUI);
     bindingDescription.inputRate = vk::VertexInputRate::eVertex;
     return bindingDescription;
   }
@@ -125,17 +125,17 @@ private:
     attributeDescriptions[0].binding = 0;
     attributeDescriptions[0].location = 0;
     attributeDescriptions[0].format = vk::Format::eR16G16Sint;
-    attributeDescriptions[0].offset = Engine::vkVertexUI::get_offset_pos();
+    attributeDescriptions[0].offset = VertexUI::get_offset_pos();
 
     attributeDescriptions[1].binding = 0;
     attributeDescriptions[1].location = 1;
     attributeDescriptions[1].format = vk::Format::eR8G8B8Uint;
-    attributeDescriptions[1].offset = Engine::vkVertexUI::get_offset_col();
+    attributeDescriptions[1].offset = VertexUI::get_offset_col();
 
     attributeDescriptions[2].binding = 0;
     attributeDescriptions[2].location = 2;
     attributeDescriptions[2].format = vk::Format::eR16G16Uint;
-    attributeDescriptions[2].offset = Engine::vkVertexUI::get_offset_uv();
+    attributeDescriptions[2].offset = VertexUI::get_offset_uv();
     return attributeDescriptions;
   }
 
@@ -147,7 +147,7 @@ public:
 
   void init();
   void update_wndsize();
-  void draw(::vkUI::Engine::vkDrawData* dd);
+  void draw(DrawData* dd);
   void terminate();
   void createSurface(GLFWwindow* window);
   SwapChainSupportDetails querySwapChainSupport(const vk::PhysicalDevice& device);

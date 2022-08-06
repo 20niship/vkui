@@ -47,7 +47,7 @@ void uiRootWidget2D::calcHoveringWidget(int x, int y) {
 
 bool uiRootWidget2D::CallbackFunc(uiCallbackFlags flag, Vector2d vec2_1, [[maybe_unused]] int num_1, [[maybe_unused]] int num_2, [[maybe_unused]] const char** strings) {
   double xpos, ypos;
-  glfwGetCursorPos(Engine::getDrawingWindow()->getGLFWwindow(), &xpos, &ypos);
+  glfwGetCursorPos(getDrawingWindow()->getGLFWwindow(), &xpos, &ypos);
   // 一次的に機能停止
   // if(CallbackResizer(flag, {xpos, ypos}, num_1, num_2, strings)) return true;
 
@@ -139,7 +139,6 @@ bool uiRootWidget2D::CallbackFunc(uiCallbackFlags flag, Vector2d vec2_1, [[maybe
       break;
     default:
       uiLOGE << "Not set flag!!\n";
-      disp((uint16_t)flag);
 
       break;
   }
@@ -159,7 +158,7 @@ uiLabel::uiLabel(const std::string text_, const Vector3b& col_) {
   col = col_;
 }
 void uiLabel::render() {
-  auto wnd = Engine::getDrawingWindow();
+  auto wnd = getDrawingWindow();
   if(!flags.Active) {
     needRendering(false);
     std::cout << "Not visivle or not active widget\n";
@@ -196,8 +195,8 @@ void uiButton::render() {
     needRendering(true);
   }
   if(flags.needRendering) {
-    auto wnd = Engine::getDrawingWindow();
-    const auto style = Engine::getStyle();
+    auto wnd = getDrawingWindow();
+    const auto style = getStyle();
     if(*value) {
       wnd->AddRectPosSize_clip(pos, size, style->col_WidgetBg);
     } else {
@@ -234,8 +233,8 @@ void uiButtonFunc::render() {
     return;
   }
   if(flags.needRendering) {
-    auto wnd = Engine::getDrawingWindow();
-    const auto style = Engine::getStyle();
+    auto wnd = getDrawingWindow();
+    const auto style = getStyle();
     wnd->AddRectPosSize_clip(pos, size, style->col_WidgetBg);
     wnd->AddRectPosSize_clip(pos, size, style->col_WidgetLine, 1);
     const auto s = wnd->AddString2D(text, pos + style->WidgetPadding, 1, wnd->getClippingRect()) + style->WidgetPadding * 2;
@@ -270,8 +269,8 @@ void uiCheckbox::render() {
   }
   if(!flags.needRendering) return;
 
-  auto wnd = Engine::getDrawingWindow();
-  const auto style = Engine::getStyle();
+  auto wnd = getDrawingWindow();
+  const auto style = getStyle();
   // 1. draw checkbox
   constexpr int checkbox_size = 14;
   const int ypad = (size[1] - checkbox_size) / 2;
@@ -312,8 +311,8 @@ template <typename T> void uiSliderH<T>::render() {
     needRendering(false);
     return;
   }
-  auto wnd = Engine::getDrawingWindow();
-  const auto style = Engine::getStyle();
+  auto wnd = getDrawingWindow();
+  const auto style = getStyle();
 
   if((*value != last_value) || flags.needRendering) {
     int pos_x = pos[0] + size[0] * (*value - range[0]) / (range[1] - range[0]);
@@ -366,8 +365,8 @@ template <typename T> void uiRange<T>::render() {
     needRendering(false);
     return;
   }
-  auto wnd = Engine::getDrawingWindow();
-  const auto style = Engine::getStyle();
+  auto wnd = getDrawingWindow();
+  const auto style = getStyle();
   if((*value != last_value) || flags.needRendering) {
     wnd->AddRectPosSize(pos, size, style->col_WidgetBg);
     wnd->AddRectPosSize(pos, size, style->col_WidgetLine);
@@ -403,7 +402,7 @@ template <typename T> bool uiRange<T>::CallbackFunc(uiCallbackFlags flag, Vector
       selecting_idx = -1;
   }
   if(selecting_idx < 0) return false;
-  if(Engine::getFocusedWidget() != this) return false;
+  if(getFocusedWidget() != this) return false;
 
   if(flag == uiCallbackFlags::MouseScroll) {
     (*value)[selecting_idx] += num_2 > 0 ? delta : -delta;
@@ -451,7 +450,7 @@ void uiMultiLine::operator<<(const double val) {
 }
 
 void uiMultiLine::render() {
-  auto wnd = Engine::getDrawingWindow();
+  auto wnd = getDrawingWindow();
   if(!flags.Active) {
     needRendering(false);
     std::cout << "Not visivle or not active widget\n";
@@ -568,8 +567,8 @@ void uiTable::render() {
   // size[1] = std::max<int>(size[1], cols * 100);
   const int rows = columns.size() / cols;
   const int td_width = size[0] / cols;
-  auto wnd = Engine::getDrawingWindow();
-  const auto style = Engine::getStyle();
+  auto wnd = getDrawingWindow();
+  const auto style = getStyle();
   int curHeight = pos[1];
   wnd->AddLine2D(pos, {pos[0] + size[0], pos[1]}, style->col_WidgetLineDisabled, 1.0);
   for(int y = 0; y < rows; y++) {
@@ -618,12 +617,12 @@ template <typename T> void uiVector3<T>::render() {
     return;
   }
 
-  auto wnd = Engine::getDrawingWindow();
-  const auto style = Engine::getStyle();
+  auto wnd = getDrawingWindow();
+  const auto style = getStyle();
   if((*value != last_value) || (flags.needRendering)) {
     const auto ss = wnd->AddString2D(text, pos + Vector2d{0, style->WidgetPadding[0]}, 1);
-    const Vector2d pos2{pos[0] + ss[0] + style->WidgetMargin[0], pos[1]};
-    const Vector2d each_size{(size[0] - pos2[0] + pos[0]) / 3 - 1, size[1]};
+    const Vector2d pos2(pos[0] + ss[0] + style->WidgetMargin[0], pos[1]);
+    const Vector2d each_size((size[0] - pos2[0] + pos[0]) / 3 - 1, size[1]);
     _num_display_pos = pos2;
     if(each_size[0] < 0) return;
     Vector2d new_outer_size = ss;
@@ -668,7 +667,7 @@ template <typename T> bool uiVector3<T>::CallbackFunc(uiCallbackFlags flag, Vect
   if(selecting_idx < 0) {
     return false;
   }
-  if(Engine::getFocusedWidget() != this) return false;
+  if(getFocusedWidget() != this) return false;
 
   if(flag == uiCallbackFlags::MouseScroll) {
     (*value)[selecting_idx] += num_2 > 0 ? 1 : -1;
@@ -705,8 +704,8 @@ void uiCol::render() {
     needRendering(false);
     return;
   }
-  auto wnd = Engine::getDrawingWindow();
-  const auto style = Engine::getStyle();
+  auto wnd = getDrawingWindow();
+  const auto style = getStyle();
   if(*value == last_value && (!flags.needRendering)) return;
 
   const auto ss = wnd->AddString2D(text, pos + Vector2d{0, style->WidgetPadding[0]}, 1);
@@ -750,7 +749,7 @@ bool uiCol::CallbackFunc(uiCallbackFlags flag, Vector2d vec2_1, [[maybe_unused]]
   if(selecting_idx < 0) {
     return false;
   }
-  if(Engine::getFocusedWidget() != this) return false;
+  if(getFocusedWidget() != this) return false;
 
   if(flag == uiCallbackFlags::MouseScroll) {
     std::cout << "MOUSESCROLL" << vec2_1[0] << vec2_1[1] << std::endl;
@@ -782,8 +781,8 @@ void uiCol2::render() {
     needRendering(false);
     return;
   }
-  auto wnd = Engine::getDrawingWindow();
-  const auto style = Engine::getStyle();
+  auto wnd = getDrawingWindow();
+  const auto style = getStyle();
   if(*value == last_value && (!flags.needRendering)) return;
   hsv = Cutil::RGB2HSV(*value);
 
@@ -838,12 +837,12 @@ void uiCol2::render() {
 }
 
 bool uiCol2::CallbackFunc(uiCallbackFlags flag, Vector2d vec2_1, [[maybe_unused]] int num_1, [[maybe_unused]] int num_2, [[maybe_unused]] const char** strings) {
-  if(Engine::getFocusedWidget() != this) return false;
+  if(getFocusedWidget() != this) return false;
 
   constexpr int bar_color = 15;
   const int w = std::min<int>(size[0], 300);
 
-  const auto style = Engine::getStyle();
+  const auto style = getStyle();
   const Vector2d col1_top = pos + style->WidgetPadding;
   const Vector2d col1_size(w - bar_color - style->WidgetPadding[0]*2, w);
 
@@ -887,8 +886,8 @@ void uiFrame::render() {
     std::cout << "Not visivle or not active widget\n";
     return;
   }
-  auto wnd = Engine::getDrawingWindow();
-  const auto style = Engine::getStyle();
+  auto wnd = getDrawingWindow();
+  const auto style = getStyle();
 
   // if(lastScrollPos != scrollPos){ needRendering(true); }
   const uint16_t title_bar = flags.EnableTitlebar ? style->TitlebarHeight : 0;
@@ -969,8 +968,8 @@ void uiTextTexture::render() {
     std::cout << "Not visivle or not active widget\n";
     return;
   }
-  auto wnd = Engine::getDrawingWindow();
-  const auto style = Engine::getStyle();
+  auto wnd = getDrawingWindow();
+  const auto style = getStyle();
 
   // if(lastScrollPos != scrollPos){ needRendering(true); }
   const uint16_t title_bar = flags.EnableTitlebar ? style->TitlebarHeight : 0;
@@ -991,8 +990,8 @@ void uiTextTexture::render() {
       }
     }
     wnd->setClippingRect(std::move(vkUI::uiRect(pos + Vector2d{0, title_bar}, size - Vector2d{0, title_bar})));
-    const auto fw = Engine::getTextRendererPtr()->TexWidth;
-    const auto fh = Engine::getTextRendererPtr()->TexHeight;
+    const auto fw = getTextRendererPtr()->TexWidth;
+    const auto fh = getTextRendererPtr()->TexHeight;
     /* std::cout << "fw, fh = " << fw << ". " << fh << std::endl; */
     wnd->AddRectPosSize(pos, size, style->col_WidgetBg);
     wnd->AddRectPosSize(pos, size, style->col_WidgetLine, 2);
@@ -1046,8 +1045,8 @@ void uiCollapse::render() {
     std::cout << "Not visivle or not active widget\n";
     return;
   }
-  auto wnd = Engine::getDrawingWindow();
-  const auto style = Engine::getStyle();
+  auto wnd = getDrawingWindow();
+  const auto style = getStyle();
 
   Vector2d whole_size{0, 0};
   // if(lastScrollPos != scrollPos){ needRendering(true); }
@@ -1082,7 +1081,7 @@ bool uiCollapse::CallbackFunc(uiCallbackFlags flag, Vector2d vec2_1, [[maybe_unu
   if(!flags.Active) return false;
   if(flag != uiCallbackFlags::LMouseDown) return false;
   /* if(!flags.EnableTitlebar ){ return false; } */
-  const int th = Engine::getStyle()->TitlebarHeight;
+  const int th = getStyle()->TitlebarHeight;
   if(!uiRect(pos, {size[0] - th - 6, th}).isContains(vec2_1)) return false;
 
   CollapseTitlebar(!flags.CollapsingTitlebar);
@@ -1096,8 +1095,8 @@ bool uiCollapse::CallbackFunc(uiCallbackFlags flag, Vector2d vec2_1, [[maybe_unu
 // -----------------------------------------------------
 
 void uiWidget::renderScrollbars() {
-  const auto style = Engine::getStyle();
-  const auto wnd = Engine::getDrawingWindow();
+  const auto style = getStyle();
+  const auto wnd = getDrawingWindow();
   // if((lastInnerSize != innerSize) || (scrollPos != lastScrollPos)){ needRendering(true); if(widgets.size() > 0) needApplyAlignment();}
   const auto innerSize = getOuterSize() - style->WidgetPadding -
                          Vector2d(0, -style->TitlebarHeight); // TODO: Widgetごとに異なる可能性があるのでgetInnerSize()にする？それともスクロールバーRendering実装をWidget個別にする＿
@@ -1125,7 +1124,7 @@ void uiWidget::CallbackTitlebar(uiCallbackFlags flag, Vector2d vec2_1, [[maybe_u
   static Vector2d moving_mouse_offset{0, 0};
   static Vector2d move_start_pos = pos;
 
-  const int th = Engine::getStyle()->TitlebarHeight;
+  const int th = getStyle()->TitlebarHeight;
   const bool touching_closebtn = uiRect(pos[0] + size[0] - th, pos[1], th, th).isContains(vec2_1);
   const bool touching_titlebar = uiRect(pos, {size[0] - th - 6, th}).isContains(vec2_1);
 
@@ -1161,7 +1160,7 @@ void uiWidget::CallbackTitlebar(uiCallbackFlags flag, Vector2d vec2_1, [[maybe_u
 }
 
 void uiWidget::updateScrollPos() {
-  const auto style = Engine::getStyle();
+  const auto style = getStyle();
   if(!flags.EnableTitlebar) return;
   const auto innerSize = getOuterSize() - style->WidgetPadding -
                          Vector2d(0, -style->TitlebarHeight); // TODO: Widgetごとに異なる可能性があるのでgetInnerSize()にする？それともスクロールバーRendering実装をWidget個別にする＿
@@ -1173,10 +1172,10 @@ void uiWidget::updateScrollPos() {
 
 bool uiWidget::CallbackResizer(uiCallbackFlags flag, Vector2d vec2_1, [[maybe_unused]] int num_1, [[maybe_unused]] int num_2, [[maybe_unused]] const char** strings) {
   if(!(flag == uiCallbackFlags::LMouseDown || flag == uiCallbackFlags::LMouseUP || flag == uiCallbackFlags::MouseMove || flag == uiCallbackFlags::OffHover)) return false;
-  const auto wnd = Engine::getDrawingWindow();
+  const auto wnd = getDrawingWindow();
 
   constexpr int ui_inner_gap_ = 3;
-  const int th = Engine::getStyle()->TitlebarHeight + 4;
+  const int th = getStyle()->TitlebarHeight + 4;
   constexpr int resizer_size = 10;
   uiRect resizeRect_ld(pos[0] + size[0] - resizer_size, pos[1] + size[1] - resizer_size, resizer_size, resizer_size);
   // uiRect resizeRect_top  (pos[0]                         , pos[1],                          size[0], ui_inner_gap_);
@@ -1281,7 +1280,7 @@ bool uiWidget::CallbackResizer(uiCallbackFlags flag, Vector2d vec2_1, [[maybe_un
 }
 
 bool uiWidget::CallbackScrollbars(uiCallbackFlags flag, Vector2d vec2_1, [[maybe_unused]] int num_1, [[maybe_unused]] int num_2, [[maybe_unused]] const char** strings) {
-  auto style = Engine::getStyle();
+  auto style = getStyle();
   bool isContains;
   const auto innerSize = getOuterSize() - style->WidgetPadding -
                          Vector2d(0, -style->TitlebarHeight); // TODO: Widgetごとに異なる可能性があるのでgetInnerSize()にする？それともスクロールバーRendering実装をWidget個別にする＿
@@ -1337,7 +1336,7 @@ bool uiWidget::CallbackScrollbars(uiCallbackFlags flag, Vector2d vec2_1, [[maybe
 void uiWidget::calcAlignVertical() {
   if(widgets.size() == 0) return;
   if(flags.EnableTitlebar && flags.CollapsingTitlebar) return;
-  const auto style = Engine::getStyle();
+  const auto style = getStyle();
   const uint16_t titlebar_y = flags.EnableTitlebar ? style->TitlebarHeight : 0;
 
   uint16_t desiredHeight = 0;
@@ -1425,7 +1424,7 @@ void uiWidget::calcAlignVertical() {
 void uiWidget::calcAlignHorizontal() {
   /*
 if(widgets.size() == 0) { flags.needApplyAlignment = false; flags.needCalcInnerSize = false; return; }
-const auto style = Engine::getStyle();
+const auto style = getStyle();
 
 uint16_t titlebar_y = 0;
 if(flags.EnableTitlebar) titlebar_y  = style->FontSize + style->WidgetInnerSpace_y*2 + 4;

@@ -3,6 +3,7 @@
 #include <cutil/vector.hpp>
 
 namespace vkUI{
+  using namespace Cutil;
 
   struct CameraPosition {
     Vector3 pos;

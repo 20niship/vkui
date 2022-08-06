@@ -61,7 +61,7 @@ void uiPlot::setPlotRange(const _Vec<T,2> *v, const int n){
 
 template <typename T>
 void uiPlot::plotLine(const T *v, const int n, const uiPlotParams &param){
-  auto wnd = Engine::getDrawingWindow();
+  auto wnd = getDrawingWindow();
   if(!flags.Active){ return; }
   if(!prange.set){ setPlotRangeY(v, n); prange.xlim = {0, (double)n}; prange.set = true; }
   for(size_t i=0; i<n-1; i++){
@@ -73,7 +73,7 @@ void uiPlot::plotLine(const T *v, const int n, const uiPlotParams &param){
 }
 template <typename T>
 void uiPlot::plotLine(const T *x, const T *y, const int n, const uiPlotParams &param){
-  auto wnd = Engine::getDrawingWindow();
+  auto wnd = getDrawingWindow();
   if(!flags.Active){ return; }
   if(!prange.set){  setPlotRangeX(x, n); setPlotRangeY(y, n); prange.set = true; }
   for(size_t i=0; i<n-1; i++){
@@ -86,7 +86,7 @@ void uiPlot::plotLine(const T *x, const T *y, const int n, const uiPlotParams &p
 
 template <typename T>
 void uiPlot::plotScatter(const _Vec<T, 2> *v, const int n, const uiPlotParams &param){
-  auto wnd = Engine::getDrawingWindow();
+  auto wnd = getDrawingWindow();
   if(!flags.Active){ return; }
   if(!prange.set){ setPlotRange(v, n); }
   switch(param.marker){
@@ -111,8 +111,8 @@ void uiPlot::render() {
 	if(!flags.Active){ needRendering(false); return; }
   if(!flags.needRendering){ return; }
   label_list.clear();
-  auto wnd = Engine::getDrawingWindow();
-  const auto style = Engine::getStyle();
+  auto wnd = getDrawingWindow();
+  const auto style = getStyle();
   wnd->AddRectPosSize(pos, size, {0, 0, 0});
   wnd->AddRectPosSize(pos, size, style->col_WidgetLine, 1);
   prange.set = false;
@@ -125,7 +125,7 @@ void uiPlot::render() {
 }
 
 void uiPlot::plotOther(){
-  auto wnd = Engine::getDrawingWindow();
+  auto wnd = getDrawingWindow();
 	if(!flags.Active){ needRendering(false); return; }
   // plot x values 
   const int nx = size[0] / 80;

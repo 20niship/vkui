@@ -13,6 +13,7 @@
 #include <string>
 #include <utility>
 
+
 template <typename... Args> std::string myFormat(const std::string& base_str, const Args... args) {
   std::string base_str_ = base_str;
   /* constexpr std::size_t size = sizeof...(Args); */
@@ -27,7 +28,7 @@ template <typename... Args> std::string myFormat(const std::string& base_str, co
 #endif
 #include <chrono>
 
-namespace vkUI::Engine {
+namespace vkUI{
 uiWindow::uiWindow(std::string _name, uint16_t width, uint16_t height) {
   window = glfwCreateWindow(width, height, _name.c_str(), nullptr, nullptr);
   glfwSetWindowUserPointer(window, this);
@@ -515,7 +516,7 @@ Vector2d uiWindow::get_text_size(const std::string& str, float size) const {
   int x = 0;
   int y = 0;
   const std::u32string u32str = std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>().from_bytes(str);
-  const auto text_renderer = ::vkUI::Engine::getTextRendererPtr();
+  const auto text_renderer = ::vkUI::getTextRendererPtr();
   const int spacing = getStyle()->TextSpacing;
   Vector2d whole_size{0, 0};
   if(u32str.size() == 0) return {0, 0};
@@ -583,15 +584,14 @@ void uiWindow::AddStringBalloon2D(const std::string& str, const Vector2d& to, co
 // ----------------------------------------------------------------
 void uiWindow::__AddPointSizeZero2D(const Vector2d& pos, const Vector3b& col) {
   const auto text_renderer = getTextRendererPtr();
-  /* dd.vertices_ui.push_back(std::move(VertexUI(pos, col, text_renderer->TexUvWhitePixel))); */
-  dd.add(pos, col, text_renderer->TexUvWhitePixel);
+  dd.vertices_ui.push_back(std::move(Render::VertexUI(pos, col, text_renderer->TexUvWhitePixel)));
 }
 
 Vector2d uiWindow::AddString2D(const std::string& str, const Vector2d& pos, const float size, const Vector3b& col, const int xlim) {
   const std::u32string u32str = std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>().from_bytes(str);
   int x = pos[0];
   int y = pos[1];
-  const auto text_renderer = ::vkUI::Engine::getTextRendererPtr();
+  const auto text_renderer = ::vkUI::getTextRendererPtr();
   const int spacing = getStyle()->TextSpacing;
   Vector2d whole_size{0, 0};
   // const int w = text_renderer->TexWidth;
@@ -624,7 +624,7 @@ Vector2d uiWindow::AddString2D(const std::string& str, const Vector2d& pos, cons
   const std::u32string u32str = std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>().from_bytes(str);
   int x = pos[0];
   int y = pos[1];
-  const auto text_renderer = ::vkUI::Engine::getTextRendererPtr();
+  const auto text_renderer = ::vkUI::getTextRendererPtr();
   const int spacing = getStyle()->TextSpacing;
   Vector2d whole_size{0, 0};
   // const int w = text_renderer->TexWidth;

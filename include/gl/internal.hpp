@@ -8,8 +8,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-
 namespace vkUI::Render {
+  using namespace Cutil;
 
 class uiShader {
 private:
@@ -73,7 +73,7 @@ public:
 
   void init();
   void update_wndsize() {}
-  void draw(::vkUI::Engine::glDrawData* dd);
+  void draw(DrawData* dd);
   void terminate();
   void createSurface(GLFWwindow* window);
 };

@@ -3,6 +3,8 @@
 #include <widgets/basic_2d.hpp>
 #include <widgets/basic.hpp>
 
+using namespace Cutil;
+
 Vector3 pos = {2, 3, 4}; //{1, 2, 3};
 Vector3 dir = {5, 5, 5};
 Vector3 u = {0, 1, 0};
@@ -10,7 +12,6 @@ double scale = 1;
 
 
 using namespace vkUI;
-using namespace vkUI::Engine;
 
 const int nCloud = 128000;
 Vector3 points[nCloud];
@@ -35,8 +36,8 @@ void make_cloud(){
 int main() {
     make_cloud();
     try {
-        vkUI::Engine::init();
-        auto wnd = vkUI::Engine::addWindow("test", 640,480);
+        vkUI::init();
+        auto wnd = vkUI::addWindow("test", 640,480);
         auto cylinder = vkUI::uiCylinder({0, 0, 0}, {0, 0, 100}, 3, {255, 0, 0});
         auto coord = vkUI::uiCoordinate({0, 0, 0}, 500);
         auto coord2 = vkUI::uiCoordinate({10, 10, 10}, 15);
@@ -45,7 +46,7 @@ int main() {
         /* wnd->addWidget(&cylinder); */
         /* wnd->addWidget(&coord2); */
         wnd->setCameraPos({60, 60, 60});
-        vkUI::Engine::initFinish();
+        vkUI::initFinish();
         bool loop = true;
         wnd->setCameraScale(0.03);
         wnd->setCameraTarget({10, 10, 10});
@@ -54,7 +55,7 @@ int main() {
         while(loop){
             wnd->updateVertexBuffer();
             wnd->AddString2D("123-aa", {50, 100}, 1);
-            loop = vkUI::Engine::render();
+            loop = vkUI::render();
         }
     }
     catch (const std::exception& e) {

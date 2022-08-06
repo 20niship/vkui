@@ -7,14 +7,12 @@
 #include <gl/internal.hpp>
 using uiRenderer = vkUI::Render::glRender;
 using uiWndRenderer = vkUI::Render::glWndRender;
-using DrawData = vkUI::Engine::glDrawData;
 #else
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <vk/internal.hpp>
 using uiRenderer = vkUI::Render::vkRender;
 using uiWndRenderer = vkUI::Render::vkWndRender;
-using DrawData = vkUI::Engine::vkDrawData;
 #endif
 
 #include <cmath>
@@ -44,46 +42,11 @@ using DrawData = vkUI::Engine::vkDrawData;
 #include <widget.hpp>
 
 
-namespace vkUI {
-struct uiRect {
-  uiRect() {
-    posX = 0;
-    posY = 0;
-    width = 0;
-    height = 0;
-  }
-  uiRect(float posX_, float posY_, float width_, float height_) {
-    posX = posX_;
-    posY = posY_;
-    width = width_;
-    height = height_;
-  }
-  template <typename U> uiRect(_Vec<U, 2> pos, _Vec<U, 2> size) {
-    posX = pos[0];
-    posY = pos[1];
-    width = size[0];
-    height = size[1];
-  }
-
-  float posX, posY, width, height;
-  inline float right() { return posX + width; }
-  inline float bottom() { return posY + height; }
-  inline bool isContains(const int x, const int y) const { return (x >= posX) && (x <= posX + width) && (y >= posY) && (y <= posY + height); }
-  template <typename U> inline bool isContains(const _Vec<U, 2> other) const { return isContains(other[0], other[1]); }
-
-  inline bool isNoContains(uiRect outside) { return (outside.posX > right()) || (outside.right() < posX) || (outside.posY > bottom()) || (outside.bottom() < posY); }
-
-  inline Vector2 getPos() { return {posX, posY}; }
-  inline Vector2 getSize() { return {width, height}; }
-};
-
-class uiWidget;
-
-} // namespace vkUI
-
-namespace vkUI::Engine {
+namespace vkUI{
 class uiFont;
 class uiWindow;
+class uiWidget;
+
 using uihWnd = uiWindow*;
 using uihWidget = uiWidget*;
 
@@ -111,7 +74,7 @@ private:
 
   CameraPosition camera_position;
 
-  DrawData dd;
+  Render::DrawData dd;
   uiWndRenderer renderer;
 
   float fps;
@@ -295,7 +258,7 @@ public:
     dd.clear();
   }
   inline void __AddPointSizeZero(const Vector3& pos, const Vector3b& col) {
-    /* dd.vertices.push_back(std::move(Vertex(pos, col))); */
+    dd.vertices.push_back(std::move(Render::Vertex(pos, col)));
   }
   [[deprecated]] inline void __AddPointSizeZero(const Vector3& pos, const Vector3b& col, [[maybe_unused]] const Vector2& uv) {
     /* dd.vertices.push_back(std::move(Vertex(pos, col))); */
@@ -449,10 +412,10 @@ public:
   // TODO: stackにしてpop/pushするべきかも
   void __AddPointSizeZero2D(const Vector2d& pos, const Vector3b& col);
   inline void __AddPointSizeZero2D(const Vector2d& pos, const Vector3b& col, const Vector2d& uv) {
-    /* dd.vertices_ui.push_back(std::move(VertexUI(pos, col, uv))); */
-    dd.add(pos, col, uv);
+    dd.vertices_ui.push_back(std::move(Render::VertexUI(pos, col, uv)));
   }
 
+#ifdef WITH_VULKAN
   inline void AddTriangle2D(const Vector2d& pos1, const Vector2d& pos2, const Vector2d& pos3, const Vector3b& col1, const Vector3b& col2, const Vector3b& col3, const Vector2d& uv1,
                             const Vector2d& uv2, const Vector2d& uv3) {
     __AddPointSizeZero2D(pos1, col1, uv1);
@@ -475,6 +438,31 @@ public:
     __AddPointSizeZero2D(pos3, col);
     __AddPointSizeZero2D(pos2, col);
   }
+#else 
+  inline void AddTriangle2D(const Vector2d& pos1, const Vector2d& pos2, const Vector2d& pos3, const Vector3b& col1, const Vector3b& col2, const Vector3b& col3, const Vector2d& uv1,
+                            const Vector2d& uv2, const Vector2d& uv3) {
+    __AddPointSizeZero2D(pos1, col1, uv1);
+    __AddPointSizeZero2D(pos2, col2, uv2);
+    __AddPointSizeZero2D(pos3, col3, uv3);
+  }
+  inline void AddTriangle2D(const Vector2d& pos1, const Vector2d& pos2, const Vector2d& pos3, const Vector3b& col1, const Vector3b& col2, const Vector3b& col3) {
+    __AddPointSizeZero2D(pos1, col1);
+    __AddPointSizeZero2D(pos2, col2);
+    __AddPointSizeZero2D(pos3, col3);
+  }
+  // TODO: クリッピングする実装
+  inline void AddTriangle2D(const Vector2d& pos1, const Vector2d& pos2, const Vector2d& pos3, const Vector2d uv1, const Vector2d& uv2, const Vector2d& uv3, const Vector3b& col) {
+    __AddPointSizeZero2D(pos1, col, uv1);
+    __AddPointSizeZero2D(pos2, col, uv2);
+    __AddPointSizeZero2D(pos3, col, uv3);
+  }
+  inline void AddTriangle2D(const Vector2d& pos1, const Vector2d& pos2, const Vector2d& pos3, const Vector3b& col) {
+    __AddPointSizeZero2D(pos1, col);
+    __AddPointSizeZero2D(pos2, col);
+    __AddPointSizeZero2D(pos3, col);
+  }
+#endif
+
 
   inline void AddQuad2D(const Vector2d& pos1, const Vector2d& pos2, const Vector2d& pos3, const Vector2d& pos4, const Vector2d& uv1, const Vector2d& uv2, const Vector2d& uv3, const Vector2d& uv4,
                         const Vector3b& col) {
@@ -865,7 +853,7 @@ struct uiEngine {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 #endif
     text_renderer.init();
-    text_renderer.setLanguage(vkUI::Engine::FontLanguage::Japansese);
+    text_renderer.setLanguage(vkUI::FontLanguage::Japansese);
     text_renderer.build();
   }
 
@@ -912,59 +900,6 @@ extern uiEngine engine;
 inline VKUI_ENGINE_API uiEngine* getContextPtr() {
   return &engine;
 }
-#if 0
-inline VKUI_ENGINE_API vk::UniqueDevice* getDevicePtr() {
-  return &(engine.device);
-}
-inline VKUI_ENGINE_API vk::PhysicalDevice* getPhysicalDevicePtr() {
-  return &(engine.physicalDevice);
-}
-inline VKUI_ENGINE_API vk::UniqueInstance* getInstancePtr() {
-  return &(engine.instance);
-}
-inline VKUI_ENGINE_API vk::Queue* getGraphicsQueuePtr() {
-  return &(engine.graphicsQueue);
-}
-inline VKUI_ENGINE_API vk::Queue* getPresentQueuePtr() {
-  return &(engine.presentQueue);
-}
-inline VKUI_ENGINE_API auto getVertexShaderPtr() {
-  return &(engine.vertexShader);
-}
-inline VKUI_ENGINE_API auto getFragmentShaderPtr() {
-  return &(engine.fragmentShader);
-}
-
-inline VKUI_ENGINE_API auto getVertexShaderUIPtr() {
-  return &(engine.vertexShader_ui);
-}
-inline VKUI_ENGINE_API auto getFragmentShaderUIPtr() {
-  return &(engine.fragmentShader_ui);
-}
-
-inline VKUI_ENGINE_API vk::CommandPool* getCommandPool() {
-  return &(engine.commandPool);
-}
-inline VKUI_ENGINE_API vk::DescriptorPool* getDesctiptorPoolPtr() {
-  return &(engine.descriptorPool);
-}
-inline VKUI_ENGINE_API auto getImageAvailableSemaphores() {
-  return &(engine.imageAvailableSemaphores);
-}
-inline VKUI_ENGINE_API auto getRenderFinishedSemaphores() {
-  return &(engine.renderFinishedSemaphores);
-}
-inline VKUI_ENGINE_API auto getInFlightFences() {
-  return &(engine.inFlightFences);
-}
-inline VKUI_ENGINE_API auto getTextureSampler() {
-  return &(engine.textureImageView);
-}
-inline VKUI_ENGINE_API auto getTextureImageView() {
-  return &(engine.textureSampler);
-}
-#endif
-
 
 inline VKUI_ENGINE_API auto setDrawingWindow(uiWindow* wnd) {
   return engine.drawingWnd = wnd;
@@ -997,6 +932,7 @@ inline VKUI_ENGINE_API auto getTextRendererPtr() {
   return &(engine.text_renderer);
 };
 
+inline VKUI_ENGINE_API auto getWhitePixel(){ return engine.text_renderer.TexUvWhitePixel; }
 
 // initialize uiContext and create default window
 inline VKUI_ENGINE_API void init() {

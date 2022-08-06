@@ -6,14 +6,14 @@
 namespace vkUI::Render {
 
 auto getShaderObject() {
-  return Engine::getContextPtr()->renderer.get_shader();
+  return getContextPtr()->renderer.get_shader();
 }
 auto getTextureRenderer() {
-  return Engine::getContextPtr()->renderer.get_texuture_renderer();
+  return getContextPtr()->renderer.get_texuture_renderer();
 }
 
 
-void glWndRender::draw(::vkUI::Engine::glDrawData* dd) {
+void glWndRender::draw(DrawData* dd) {
   assert(dd->vertex_array.size() > 0);
   assert(dd->col_array.size() > 0);
   assert(dd->cord_array.size() > 0);
@@ -84,20 +84,18 @@ void glWndRender::draw(::vkUI::Engine::glDrawData* dd) {
 #endif
   glEnableVertexAttribArray(vertLoc);
   glBindBuffer(GL_ARRAY_BUFFER, vbo_ui);
-  glVertexAttribPointer(vertLoc, 2, GL_UNSIGNED_SHORT, GL_FALSE, sizeof(Engine::vkVertexUI), (GLvoid *)Engine::vkVertexUI::get_offset_pos());
+  glVertexAttribPointer(vertLoc, 2, GL_UNSIGNED_SHORT, GL_FALSE, sizeof(VertexUI), (GLvoid *)VertexUI::get_offset_pos());
 
   glEnableVertexAttribArray(colLoc);
   glBindBuffer(GL_ARRAY_BUFFER, vbo_ui);
-  glVertexAttribPointer(colLoc, 3, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(Engine::vkVertexUI), (GLvoid *)Engine::vkVertexUI::get_offset_col());
+  glVertexAttribPointer(colLoc, 3, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(VertexUI), (GLvoid *)VertexUI::get_offset_col());
 
   glEnableVertexAttribArray(uvLoc);
   glBindBuffer(GL_ARRAY_BUFFER, vbo_ui);
-  glVertexAttribPointer(uvLoc, 2, GL_UNSIGNED_SHORT, GL_FALSE, sizeof(Engine::vkVertexUI), (GLvoid *)Engine::vkVertexUI::get_offset_uv());
+  glVertexAttribPointer(uvLoc, 2, GL_UNSIGNED_SHORT, GL_FALSE, sizeof(VertexUI), (GLvoid *)VertexUI::get_offset_uv());
 
-  auto textrenderer = ::vkUI::Engine::getTextRendererPtr();
+  auto textrenderer = ::vkUI::getTextRendererPtr();
   glUniform2f(uvSizeLoc, 1.0f / float(textrenderer->getTexWidth()), 1.0f / float(textrenderer->getTexHeight()));
-  disp(textrenderer->getTexWidth());
-  disp(textrenderer->getTexHeight());
 
   glUniformMatrix4fv(projMatLoc, 1, GL_FALSE, &projectionMatrix[0][0]);
   glUniform1i(textureLoc, 0);
@@ -117,11 +115,11 @@ void glWndRender::draw(::vkUI::Engine::glDrawData* dd) {
   // for (int order_index = 0; order_index < draw_orders.size()-1; order_index += 3) {
   // 	if (draw_orders[order_index] == CMD_LIST_DRAW_TEXTURE2D) {
   // 		glBindTexture(GL_TEXTURE_2D, draw_orders[order_index + 2]);
-  // 		glDrawArrays(GL_TRIANGLE_STRIP, draw_orders[order_index + 1], 4);
+  // 		DrawArrays(GL_TRIANGLE_STRIP, draw_orders[order_index + 1], 4);
   // 	}
   // 	else {
   // 		glBindTexture(GL_TEXTURE_2D, textureObj.whiteTexture);
-  // 		glDrawArrays(draw_orders[order_index], draw_orders[order_index + 1], draw_orders[order_index + 2]);
+  // 		DrawArrays(draw_orders[order_index], draw_orders[order_index + 1], draw_orders[order_index + 2]);
   // 	}
   // }
 
@@ -183,14 +181,14 @@ void glWndRender::init() {
 
 
 void glRender::init() {
-  const auto engine = ::vkUI::Engine::getContextPtr();
+  const auto engine = ::vkUI::getContextPtr();
   for(auto&& w : engine->windows) w->get_renderer()->createSurface(w->getGLFWwindow());
   for(auto&& w : engine->windows) w->init();
 
   auto shader = getShaderObject();
   auto texture = getTextureRenderer();
 
-  auto fontobj = ::vkUI::Engine::getTextRendererPtr();
+  auto fontobj = ::vkUI::getTextRendererPtr();
   auto idtemp = texture->loadTexture(fontobj->getData(), fontobj->getTexWidth(), fontobj->getTexHeight(), GL_LUMINANCE, GL_NEAREST, GL_UNSIGNED_BYTE);
   texture->setTexID_chars(idtemp);
 
@@ -198,7 +196,7 @@ void glRender::init() {
   shader->setup();
   //テキストレンダラーのセットアップ
   // switched to glUI::startApp() function in glUI.cpp
-  // auto font = ::vkUI::Engine::getTextRenderer();
+  // auto font = ::vkUI::getTextRenderer();
   // font->setLanguage(FontLanguage::Japansese);
   // font->build();
 
@@ -217,7 +215,7 @@ void glRender::terminate() {
   texture->deleteAllTextures();
   glfwTerminate();
   std::cout << "GGGG\n";
-  auto textRenderer = ::vkUI::Engine::getTextRendererPtr();
+  auto textRenderer = ::vkUI::getTextRendererPtr();
   std::cout << "FFF\n";
   textRenderer->~uiFont();
   std::cout << "done!!\n";

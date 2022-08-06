@@ -10,50 +10,50 @@
 namespace vkUI::Render {
 
 static auto get_device() {
-  return vkUI::Engine::getContextPtr()->renderer.get_device_ptr();
+  return getContextPtr()->renderer.get_device_ptr();
 }
 static auto get_physical_dev_ptr() {
-  return vkUI::Engine::getContextPtr()->renderer.get_physical_device_ptr();
+  return getContextPtr()->renderer.get_physical_device_ptr();
 }
 
 auto get_vert_shader() {
-  return vkUI::Engine::getContextPtr()->renderer.get_vert_shader();
+  return getContextPtr()->renderer.get_vert_shader();
 }
 auto get_frag_shader() {
-  return vkUI::Engine::getContextPtr()->renderer.get_frag_shader();
+  return getContextPtr()->renderer.get_frag_shader();
 }
 auto get_descriptor_pool() {
-  return vkUI::Engine::getContextPtr()->renderer.get_descriptor_pool();
+  return getContextPtr()->renderer.get_descriptor_pool();
 }
 auto get_texture_image_view() {
-  return vkUI::Engine::getContextPtr()->renderer.get_texture_imageview();
+  return getContextPtr()->renderer.get_texture_imageview();
 }
 auto get_frag_shader_ui() {
-  return vkUI::Engine::getContextPtr()->renderer.get_frag_ui_shader();
+  return getContextPtr()->renderer.get_frag_ui_shader();
 }
 auto get_vert_shader_ui() {
-  return vkUI::Engine::getContextPtr()->renderer.get_vert_ui_shader();
+  return getContextPtr()->renderer.get_vert_ui_shader();
 }
 auto get_sampler() {
-  return vkUI::Engine::getContextPtr()->renderer.get_texture_sampler();
+  return getContextPtr()->renderer.get_texture_sampler();
 }
 static auto get_command_pool() {
-  return vkUI::Engine::getContextPtr()->renderer.get_command_pool();
+  return getContextPtr()->renderer.get_command_pool();
 }
 auto get_presense_queue() {
-  return vkUI::Engine::getContextPtr()->renderer.get_present_queue();
+  return getContextPtr()->renderer.get_present_queue();
 }
 auto get_image_availabele_semaphos() {
-  return vkUI::Engine::getContextPtr()->renderer.get_image_available_semaphos();
+  return getContextPtr()->renderer.get_image_available_semaphos();
 }
 auto get_render_finished_semaphos() {
-  return vkUI::Engine::getContextPtr()->renderer.get_render_finished_semaphos();
+  return getContextPtr()->renderer.get_render_finished_semaphos();
 }
 auto get_fences() {
-  return vkUI::Engine::getContextPtr()->renderer.get_fences();
+  return getContextPtr()->renderer.get_fences();
 }
 auto get_graphics_queue() {
-  return vkUI::Engine::getContextPtr()->renderer.get_graphics_queue();
+  return getContextPtr()->renderer.get_graphics_queue();
 }
 
 
@@ -223,7 +223,7 @@ uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties)
 }
 
 void vkRender::createTextureImage() {
-  const auto text_renderer = Engine::getTextRendererPtr();
+  const auto text_renderer = getTextRendererPtr();
   unsigned char* pixels = text_renderer->getData();
   const int texHeight = text_renderer->TexHeight;
   const int texWidth = text_renderer->TexWidth;
@@ -363,7 +363,7 @@ vk::UniqueShaderModule vkRender::createShader(std::string filename) {
 
 
 bool vkRender::isDeviceSuitable(const vk::PhysicalDevice& device) {
-  const auto ctx = Engine::getContextPtr();
+  const auto ctx = getContextPtr();
   assert(ctx->windows.size() > 0);
   QueueFamilyIndices indices = findQueueFamilies(device);
 
@@ -397,7 +397,7 @@ bool vkRender::checkDeviceExtensionSupport(const vk::PhysicalDevice& device) {
 }
 
 QueueFamilyIndices vkRender::findQueueFamilies(vk::PhysicalDevice device) {
-  assert(Engine::getContextPtr()->windows.size() > 0);
+  assert(getContextPtr()->windows.size() > 0);
   QueueFamilyIndices indices;
   auto queueFamilies = device.getQueueFamilyProperties();
 
@@ -407,7 +407,7 @@ QueueFamilyIndices vkRender::findQueueFamilies(vk::PhysicalDevice device) {
       indices.graphicsFamily = i;
     }
 
-    if(queueFamily.queueCount > 0 && device.getSurfaceSupportKHR(i, (*Engine::getAllWindows())[0]->get_renderer()->getSurface())) {
+    if(queueFamily.queueCount > 0 && device.getSurfaceSupportKHR(i, (*getAllWindows())[0]->get_renderer()->getSurface())) {
       indices.presentFamily = i;
     }
 
@@ -459,7 +459,7 @@ void vkRender::init() {
   uiLOGE << "create instance!";
   createInstance();
   setupDebugCallback();
-  const auto engine = ::vkUI::Engine::getContextPtr();
+  const auto engine = getContextPtr();
   for(auto&& w : engine->windows) w->get_renderer()->createSurface(w->getGLFWwindow());
   // createSurface();
   pickPhysicalDevice();
@@ -470,7 +470,7 @@ void vkRender::init() {
   createSyncObjects();
   createTextureImage();
   std::cout << "createTextureImage end" << std::endl;
-  const auto windows = Engine::getContextPtr()->windows;
+  const auto windows = getContextPtr()->windows;
   for(auto&& w : windows) w->init(); // TODO: AddWindowを複数回したときに同じWindowのinitが複数よされることになる
   std::cout << "createSyncObjects" << std::endl;
 }
@@ -512,7 +512,7 @@ void vkWndRender::createSurface(GLFWwindow* window) {
     throw std::runtime_error("Vulkan is not supported (glfwVulkanSupported() failed)");
   }
 
-  auto instance = vkUI::Engine::getContextPtr()->renderer.get_instance_ptr();
+  auto instance = getContextPtr()->renderer.get_instance_ptr();
   assert(window != nullptr);
   assert(instance != nullptr);
 
@@ -530,8 +530,8 @@ void vkWndRender::createSurface(GLFWwindow* window) {
 
 void vkWndRender::createSwapChain() {
   assert(surface);
-  auto device = ::vkUI::Engine::getContextPtr()->renderer.get_device_ptr();
-  auto physicalDevice = ::vkUI::Engine::getContextPtr()->renderer.get_physical_device_ptr();
+  auto device = getContextPtr()->renderer.get_device_ptr();
+  auto physicalDevice = getContextPtr()->renderer.get_physical_device_ptr();
   assert(device != nullptr);
   assert(physicalDevice != nullptr);
   SwapChainSupportDetails swapChainSupport = querySwapChainSupport(*physicalDevice);
@@ -548,7 +548,7 @@ void vkWndRender::createSwapChain() {
   vk::SwapchainCreateInfoKHR createInfo(vk::SwapchainCreateFlagsKHR(), surface, imageCount, surfaceFormat.format, surfaceFormat.colorSpace, extent,
                                         1, // imageArrayLayers
                                         vk::ImageUsageFlagBits::eColorAttachment);
-  QueueFamilyIndices indices = Engine::getContextPtr()->renderer.findQueueFamilies(*physicalDevice);
+  QueueFamilyIndices indices = getContextPtr()->renderer.findQueueFamilies(*physicalDevice);
   uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
 
   if(indices.graphicsFamily != indices.presentFamily) {
@@ -1007,7 +1007,7 @@ vk::Extent2D vkWndRender::chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& cap
     return capabilities.currentExtent;
   } else {
     int width, height;
-    const auto window = Engine::getDrawingWindow();
+    const auto window = getDrawingWindow();
     glfwGetFramebufferSize(window->getGLFWwindow(), &width, &height);
     vk::Extent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
     actualExtent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, actualExtent.width));
@@ -1041,7 +1041,7 @@ void vkWndRender::createFramebuffers() {
 
 
 /* void vkWndRender::createCommandBuffers(bool force = false) { */
-void vkWndRender::createCommandBuffers(const vkUI::Engine::vkDrawData* dd) {
+void vkWndRender::createCommandBuffers(const DrawData* dd) {
   auto device = get_device();
   auto commandPool = get_command_pool();
   commandBuffers.resize(swapChainFramebuffers.size());
@@ -1146,7 +1146,7 @@ void vkWndRender::recreateSwapChain() {
 
   int width = 0, height = 0;
   while(width == 0 || height == 0) {
-    glfwGetFramebufferSize(Engine::getDrawingWindow()->getGLFWwindow(), &width, &height);
+    glfwGetFramebufferSize(getDrawingWindow()->getGLFWwindow(), &width, &height);
     glfwWaitEvents();
   }
 
@@ -1189,31 +1189,31 @@ void vkWndRender::update_wndsize() {
 
 void vkWndRender::createUniformBuffer() {
   static bool _created_uniform_buffer = false;
-  const vk::DeviceSize bufferSize = sizeof(vkUI::Engine::UniformData);
+  const vk::DeviceSize bufferSize = sizeof(UniformData);
   if(!_created_uniform_buffer) {
     uniformBuffer.create(bufferSize, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
     _created_uniform_buffer = true;
   }
-  Engine::UniformData tmp;
-  uniformBuffer.copyData((void*)&tmp, sizeof(vkUI::Engine::UniformData));
+  UniformData tmp;
+  uniformBuffer.copyData((void*)&tmp, sizeof(UniformData));
 }
 
-void vkWndRender::draw(vkUI::Engine::vkDrawData* dd) {
+void vkWndRender::draw(DrawData* dd) {
   static uint64_t currentFrame = 0;
   currentFrame++;
   auto currentFrame_2 = currentFrame % VK_ENGINE_MAX_FRAMES_IN_FLIGHT;
   const bool verbose = true;
   {
     if(dd->vertices.size() == 0) {
-      dd->vertices.push_back(Engine::vkVertex({0, 0, 0}, {0, 0, 0}));
-      dd->vertices.push_back(Engine::vkVertex({0, 0, 0}, {0, 0, 0}));
-      dd->vertices.push_back(Engine::vkVertex({0, 0, 0}, {0, 0, 0}));
+      dd->vertices.push_back(Vertex({0, 0, 0}, {0, 0, 0}));
+      dd->vertices.push_back(Vertex({0, 0, 0}, {0, 0, 0}));
+      dd->vertices.push_back(Vertex({0, 0, 0}, {0, 0, 0}));
     }
 
     if(dd->vertices_ui.size() == 0) {
-      dd->vertices_ui.push_back(Engine::vkVertexUI({0, 0}, {0, 0, 0}, {0, 0}));
-      dd->vertices_ui.push_back(Engine::vkVertexUI({0, 0}, {0, 0, 0}, {0, 0}));
-      dd->vertices_ui.push_back(Engine::vkVertexUI({0, 0}, {0, 0, 0}, {0, 0}));
+      dd->vertices_ui.push_back(VertexUI({0, 0}, {0, 0, 0}, {0, 0}));
+      dd->vertices_ui.push_back(VertexUI({0, 0}, {0, 0, 0}, {0, 0}));
+      dd->vertices_ui.push_back(VertexUI({0, 0}, {0, 0, 0}, {0, 0}));
     }
 
     static bool _created_vertex_buffer = false;
@@ -1229,7 +1229,7 @@ void vkWndRender::draw(vkUI::Engine::vkDrawData* dd) {
   }
 
   assert(uniformBuffer.iscreated());
-  uniformBuffer.copyData((void*)&dd->uniform_data, sizeof(vkUI::Engine::UniformData));
+  uniformBuffer.copyData((void*)&dd->uniform_data, sizeof(UniformData));
   if(verbose) {
     std::cout << "vertex size(3d, 2d, 2d_overlay) = " << dd->vertices.size() << ", " << dd->vertices_ui.size() << std::endl;
   }

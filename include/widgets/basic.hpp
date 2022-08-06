@@ -19,7 +19,7 @@ public:
     void setDrawType(const WidgetDrawTypes & t){drawtype = t;}
 	bool CallbackFunc([[maybe_unused]]uiCallbackFlags flag, [[maybe_unused]]Vector2d vec2_1, [[maybe_unused]]int num_1, [[maybe_unused]]int num_2, [[maybe_unused]]const char **strings) override{ return true; };
 	void render()override{
-        const auto hWnd = ::vkUI::Engine::getDrawingWindow();
+        const auto hWnd = getDrawingWindow();
         
         const Mat3x3 rot0{
             1, 0,                0, 
@@ -98,7 +98,7 @@ public:
 	bool CallbackFunc([[maybe_unused]]uiCallbackFlags flag, [[maybe_unused]]Vector2d vec2_1, [[maybe_unused]]int num_1, [[maybe_unused]]int num_2, [[maybe_unused]]const char **strings) override{ return true; };
     void setSize(size_t _size){size = _size; }
 	void render(){
-        const auto hWnd = ::vkUI::Engine::getDrawingWindow();
+        const auto hWnd = getDrawingWindow();
         for(size_t i=0; i<size; i++){ hWnd->AddPoint(cloud[i], col, display_size); }
     }
 };
@@ -119,7 +119,7 @@ public:
     void setCloud(Vector3 *_cloud){ cloud = _cloud; }
 	bool CallbackFunc([[maybe_unused]]uiCallbackFlags flag, [[maybe_unused]]Vector2d vec2_1, [[maybe_unused]]int num_1, [[maybe_unused]]int num_2, [[maybe_unused]]const char **strings) override{ return true; };
 	void render()override{
-        const auto hWnd = ::vkUI::Engine::getDrawingWindow();
+        const auto hWnd = getDrawingWindow();
         auto *vertex_ptr = hWnd->getVertexPtr();
         const size_t start_idx = vertex_ptr->size() ;
         vertex_ptr->resize(start_idx + 3*size+3);
@@ -145,9 +145,9 @@ public:
                 (*vertex_ptr)[start_idx + i*3  ].col[0] = col[0]; (*vertex_ptr)[start_idx + i*3  ].col[1] = col[1]; (*vertex_ptr)[start_idx + i*3  ].col[2] = col[2];
                 (*vertex_ptr)[start_idx + i*3+1].col[0] = col[0]; (*vertex_ptr)[start_idx + i*3+1].col[1] = col[1]; (*vertex_ptr)[start_idx + i*3+1].col[2] = col[2];
                 (*vertex_ptr)[start_idx + i*3+2].col[0] = col[0]; (*vertex_ptr)[start_idx + i*3+2].col[1] = col[1]; (*vertex_ptr)[start_idx + i*3+2].col[2] = col[2];
-                // (*vertex_ptr)[start_idx + i*3  ] = ::vkUI::Engine::Vertex(cloud[i] + Vector3(0.0f, 0.0f, display_size), col);
-                // (*vertex_ptr)[start_idx + i*3+1] = ::vkUI::Engine::Vertex(cloud[i] + Vector3(display_size, 0.0f, 0.0f), col);
-                // (*vertex_ptr)[start_idx + i*3+2] = ::vkUI::Engine::Vertex(cloud[i] + Vector3(0.0f, display_size, 0.0f), col);
+                // (*vertex_ptr)[start_idx + i*3  ] = Vertex(cloud[i] + Vector3(0.0f, 0.0f, display_size), col);
+                // (*vertex_ptr)[start_idx + i*3+1] = Vertex(cloud[i] + Vector3(display_size, 0.0f, 0.0f), col);
+                // (*vertex_ptr)[start_idx + i*3+2] = Vertex(cloud[i] + Vector3(0.0f, display_size, 0.0f), col);
             }
         }else{
             // #pragma omp parallel for
@@ -167,9 +167,9 @@ public:
                 (*vertex_ptr)[start_idx + i*3  ].col[0] = col[0]; (*vertex_ptr)[start_idx + i*3  ].col[1] = col[1]; (*vertex_ptr)[start_idx + i*3  ].col[2] = col[2];
                 (*vertex_ptr)[start_idx + i*3+1].col[0] = col[0]; (*vertex_ptr)[start_idx + i*3+1].col[1] = col[1]; (*vertex_ptr)[start_idx + i*3+1].col[2] = col[2];
                 (*vertex_ptr)[start_idx + i*3+2].col[0] = col[0]; (*vertex_ptr)[start_idx + i*3+2].col[1] = col[1]; (*vertex_ptr)[start_idx + i*3+2].col[2] = col[2];
-                // (*vertex_ptr)[start_idx + i*3  ] = ::vkUI::Engine::Vertex(cloud[i] + Vector3(0.0f, 0.0f, display_size), col);
-                // (*vertex_ptr)[start_idx + i*3+1] = ::vkUI::Engine::Vertex(cloud[i] + Vector3(display_size, 0.0f, 0.0f), col);
-                // (*vertex_ptr)[start_idx + i*3+2] = ::vkUI::Engine::Vertex(cloud[i] + Vector3(0.0f, display_size, 0.0f), col);
+                // (*vertex_ptr)[start_idx + i*3  ] = Vertex(cloud[i] + Vector3(0.0f, 0.0f, display_size), col);
+                // (*vertex_ptr)[start_idx + i*3+1] = Vertex(cloud[i] + Vector3(display_size, 0.0f, 0.0f), col);
+                // (*vertex_ptr)[start_idx + i*3+2] = Vertex(cloud[i] + Vector3(0.0f, display_size, 0.0f), col);
             }
         }
 
@@ -190,7 +190,7 @@ public:
 
 #if 0
 	void render(){
-        const auto hWnd = ::vkUI::Engine::getDrawingWindow();
+        const auto hWnd = getDrawingWindow();
         // for(size_t i=0; i<size; i++){ hWnd->AddPoint(cloud[i].pos, cloud[i].col, display_size); }
         for(size_t i=0; i<size; i++){ 
             hWnd->AddPoint({cloud[i].pos[0], cloud[i].pos[1], cloud[i].pos[2]}, cloud[i].col, display_size);
@@ -198,7 +198,7 @@ public:
     }
 #else
 	void render()override{
-        const auto hWnd = ::vkUI::Engine::getDrawingWindow();
+        const auto hWnd = getDrawingWindow();
         auto *vertex_ptr = hWnd->getVertexPtr();
         const size_t start_idx = vertex_ptr->size() ;
         vertex_ptr->resize(start_idx + 3*size+100);
@@ -219,9 +219,9 @@ public:
             (*vertex_ptr)[start_idx + i*3  ].col[0] = cloud[i].col[0]; (*vertex_ptr)[start_idx + i*3  ].col[1] = cloud[i].col[1]; (*vertex_ptr)[start_idx + i*3  ].col[2] = cloud[i].col[2];
             (*vertex_ptr)[start_idx + i*3+1].col[0] = cloud[i].col[0]; (*vertex_ptr)[start_idx + i*3+1].col[1] = cloud[i].col[1]; (*vertex_ptr)[start_idx + i*3+1].col[2] = cloud[i].col[2];
             (*vertex_ptr)[start_idx + i*3+2].col[0] = cloud[i].col[0]; (*vertex_ptr)[start_idx + i*3+2].col[1] = cloud[i].col[1]; (*vertex_ptr)[start_idx + i*3+2].col[2] = cloud[i].col[2];
-            // (*vertex_ptr)[start_idx + i*3  ] = ::vkUI::Engine::Vertex(cloud[i] + Vector3(0.0f, 0.0f, display_size), col);
-            // (*vertex_ptr)[start_idx + i*3+1] = ::vkUI::Engine::Vertex(cloud[i] + Vector3(display_size, 0.0f, 0.0f), col);
-            // (*vertex_ptr)[start_idx + i*3+2] = ::vkUI::Engine::Vertex(cloud[i] + Vector3(0.0f, display_size, 0.0f), col);
+            // (*vertex_ptr)[start_idx + i*3  ] = Vertex(cloud[i] + Vector3(0.0f, 0.0f, display_size), col);
+            // (*vertex_ptr)[start_idx + i*3+1] = Vertex(cloud[i] + Vector3(display_size, 0.0f, 0.0f), col);
+            // (*vertex_ptr)[start_idx + i*3+2] = Vertex(cloud[i] + Vector3(0.0f, display_size, 0.0f), col);
         }
     }
 #endif
@@ -241,7 +241,7 @@ public:
     void setSize(float _size){size = _size;}
 	bool CallbackFunc([[maybe_unused]]uiCallbackFlags flag, [[maybe_unused]]Vector2d vec2_1, [[maybe_unused]]int num_1, [[maybe_unused]]int num_2, [[maybe_unused]]const char **strings) override{ return true; };
 	void render()override{
-        const auto hWnd = ::vkUI::Engine::getDrawingWindow();
+        const auto hWnd = getDrawingWindow();
         hWnd->AddLine(pos, pos + Vector3(size, 0.0f, 0.0f), {255, 10, 10}, line_width);
         hWnd->AddLine(pos, pos + Vector3(0.0f, size, 0.0f), {10, 255, 10}, line_width);
         hWnd->AddLine(pos, pos + Vector3(0.0f, 0.0f, size), {10, 10, 255}, line_width);
@@ -274,7 +274,7 @@ public:
 
         e1 = dp.cross(e1); e1 = e1.normalize();
         e2 = dp.cross(e1); e2 = e2.normalize();
-        const auto hWnd = ::vkUI::Engine::getDrawingWindow();
+        const auto hWnd = getDrawingWindow();
         switch(drawtype){
         case WidgetDrawTypes::DrawAsSurface:
             for(int i=0; i<N+1; i++){
@@ -316,7 +316,7 @@ public:
     void setColor(const Vector3b _col){ col = _col; }
 	bool CallbackFunc([[maybe_unused]]uiCallbackFlags flag, [[maybe_unused]]Vector2d vec2_1, [[maybe_unused]]int num_1, [[maybe_unused]]int num_2, [[maybe_unused]]const char **strings) override{ return true; };
 	void render()override{
-        const auto hWnd = ::vkUI::Engine::getDrawingWindow();
+        const auto hWnd = getDrawingWindow();
         const double t = (1+sqrt(5)) / 2;
         const Vector3 points[] = {
             pos + Vector3(0.0f, -1.0f, t) * size, 

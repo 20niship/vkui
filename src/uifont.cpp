@@ -2,7 +2,7 @@
 #include <logger.hpp>
 #include <sstream>
 
-namespace vkUI::Engine {
+namespace vkUI{
 
 // -----------------------------------------------------
 //    [SECTION] uiFont
@@ -38,7 +38,6 @@ uiWchar* uiFont::GetGlyphRangesJapanese() {
     _FallbackGlyphNumber,
   };
   nGlyph = sizeof(ranges) / sizeof(uiWchar);
-  disp(nGlyph);
   return ranges;
 }
 

@@ -3,19 +3,19 @@
 
 int main() {
   try {
-    vkUI::Engine::init();
-    auto wnd = vkUI::Engine::addWindow("test", 640, 480);
-    vkUI::Engine::initFinish();
+    vkUI::init();
+    auto wnd = vkUI::addWindow("test", 640, 480);
+    vkUI::initFinish();
     bool loop = true;
     while(loop) {
       wnd->updateVertexBuffer();
-      const auto fw = vkUI::Engine::getTextRendererPtr()->TexWidth;
-      const auto fh = vkUI::Engine::getTextRendererPtr()->TexHeight;
+      const auto fw = vkUI::getTextRendererPtr()->TexWidth;
+      const auto fh = vkUI::getTextRendererPtr()->TexHeight;
       wnd->drawDevelopperHelps();
-      loop = vkUI::Engine::render();
+      loop = vkUI::render();
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
-    vkUI::Engine::Terminate(true);
+    vkUI::Terminate(true);
   } catch(const std::exception& e) {
     std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;

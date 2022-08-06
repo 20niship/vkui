@@ -1,7 +1,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <engine.hpp>
 
-namespace vkUI::Engine{
+namespace vkUI{
 uiEngine engine;
 
 } // namespace vkUI::Engine

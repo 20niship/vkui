@@ -7,8 +7,7 @@
 #include <logger.hpp>
 
 using namespace vkUI;
-using namespace vkUI::Engine;
-
+using namespace Cutil;
 
 int values[100];
 Vector2 points[100];
@@ -33,9 +32,9 @@ int fps[100];
 
 int main() {
   try {
-    vkUI::Engine::init();
-    uiLOGE << "Engine::init Finished!"; 
-    auto wnd = vkUI::Engine::addWindow("test", 640, 480);
+    vkUI::init();
+    uiLOGE << "init Finished!"; 
+    auto wnd = vkUI::addWindow("test", 640, 480);
     auto coord = vkUI::uiCoordinate({0, 0, 0}, 500);
     wnd->addWidget(&coord);
     wnd->setCameraPos({60, 60, 60});
@@ -48,23 +47,24 @@ int main() {
     frame.setSize({300, 500});
     frame.setPos({10, 10});
     wnd->addWidget2D(&frame);
+
     bool hoge = false;
     float huga = 123.0f;
     Vector3 vec = {10, 20, 30};
-    frame.AddWidget(new vkUI::uiCheckbox("CHECK!", &hoge));
-    frame.AddWidget(new vkUI::uiLabel("Label seco\noge\nhogeh\nhafelaineh\noge"));
-    auto col = vkUI::uiCollapse("collapse test");
-    frame.AddWidget(&col);
-    col.AddWidget(new vkUI::uiButton("hoge", &hoge));
-    col.AddWidget(new vkUI::uiButton("huaga", &hoge));
-    col.AddWidget(new vkUI::uiLabel("Label seco\noge\nhogeh\nhafelaineh\noge"));
-    Vector3b a;
-    col.AddWidget(new vkUI::uiCol("L", &a));
-    col.AddWidget(new vkUI::uiCol2("Color", &a));
+    /* frame.AddWidget(new vkUI::uiCheckbox("CHECK!", &hoge)); */
+    /* frame.AddWidget(new vkUI::uiLabel("Label seco\noge\nhogeh\nhafelaineh\noge")); */
+    /* auto col = vkUI::uiCollapse("collapse test"); */
+    /* frame.AddWidget(&col); */
+    /* col.AddWidget(new vkUI::uiButton("hoge", &hoge)); */
+    /* col.AddWidget(new vkUI::uiButton("huaga", &hoge)); */
+    /* col.AddWidget(new vkUI::uiLabel("Label seco\noge\nhogeh\nhafelaineh\noge")); */
+    /* Vector3b a; */
+    /* /1* col.AddWidget(new vkUI::uiCol("L", &a)); *1/ */
+    /* /1* col.AddWidget(new vkUI::uiCol2("Color", &a)); *1/ */
 
-    frame.AddWidget({vkUI::Widget::Button("main", &hoge), vkUI::Widget::Label("mai\naa\n15315afan"), vkUI::Widget::Label(""), vkUI::Widget::Label("Icon Tests = " + vkUI::Icon::FOLDER),
-                     vkUI::Widget::Slider("aaa", &huga, Vector2(0, 1000)), vkUI::Widget::DragVec3("aaa", &vec, Vector2(0, 1000)),
-                     vkUI::Widget::Table("aaa\tbbb\tccc\n123\r456\r789\naaa\rvvv\rhhh\naa\rhh\rX")});
+    /* frame.AddWidget({vkUI::Widget::Button("main", &hoge), vkUI::Widget::Label("mai\naa\n15315afan"), vkUI::Widget::Label(""), vkUI::Widget::Label("Icon Tests = " + vkUI::Icon::FOLDER), */
+    /*                  vkUI::Widget::Slider("aaa", &huga, Vector2(0, 1000)), vkUI::Widget::DragVec3("aaa", &vec, Vector2(0, 1000)), */
+    /*                  vkUI::Widget::Table("aaa\tbbb\tccc\n123\r456\r789\naaa\rvvv\rhhh\naa\rhh\rX")}); */
 
     auto frame2 = vkUI::uiFrame("plot");
     /* auto frame3 = vkUI::uiTextTexture(); */
@@ -72,9 +72,9 @@ int main() {
     frame2.setSize({300, 300});
     frame2.setPos({400, 10});
     frame2.AddWidget(&plot);
-    /* wnd->addWidget2D(&frame2); */
+    wnd->addWidget2D(&frame2);
 
-    vkUI::Engine::initFinish();
+    vkUI::initFinish();
     bool loop = true;
     while(loop) {
       wnd->updateVertexBuffer();
@@ -93,10 +93,10 @@ int main() {
         plot.plotLine(fps, 100, {});
         plot.plotOther();
       }
-      loop = vkUI::Engine::render();
+      loop = vkUI::render();
       std::cout << fps[99] << std::endl;
     }
-    vkUI::Engine::Terminate(true);
+    vkUI::Terminate(true);
   } catch(const std::exception& e) {
     std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;
