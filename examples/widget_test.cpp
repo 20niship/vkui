@@ -1,10 +1,10 @@
 #include <engine.hpp>
 #include <icon.hpp>
+#include <logger.hpp>
 #include <random>
 #include <widgets/basic.hpp>
 #include <widgets/basic_2d.hpp>
 #include <widgets/plot.hpp>
-#include <logger.hpp>
 
 using namespace vkUI;
 using namespace Cutil;
@@ -33,7 +33,7 @@ int fps[100];
 int main() {
   try {
     vkUI::init();
-    uiLOGE << "init Finished!"; 
+    uiLOGE << "init Finished!";
     auto wnd = vkUI::addWindow("test", 640, 480);
     auto coord = vkUI::uiCoordinate({0, 0, 0}, 500);
     wnd->addWidget(&coord);
@@ -51,20 +51,20 @@ int main() {
     bool hoge = false;
     float huga = 123.0f;
     Vector3 vec = {10, 20, 30};
-    /* frame.AddWidget(new vkUI::uiCheckbox("CHECK!", &hoge)); */
-    /* frame.AddWidget(new vkUI::uiLabel("Label seco\noge\nhogeh\nhafelaineh\noge")); */
-    /* auto col = vkUI::uiCollapse("collapse test"); */
-    /* frame.AddWidget(&col); */
-    /* col.AddWidget(new vkUI::uiButton("hoge", &hoge)); */
-    /* col.AddWidget(new vkUI::uiButton("huaga", &hoge)); */
-    /* col.AddWidget(new vkUI::uiLabel("Label seco\noge\nhogeh\nhafelaineh\noge")); */
-    /* Vector3b a; */
-    /* /1* col.AddWidget(new vkUI::uiCol("L", &a)); *1/ */
-    /* /1* col.AddWidget(new vkUI::uiCol2("Color", &a)); *1/ */
+    frame.AddWidget(new vkUI::uiCheckbox("CHECK!", &hoge));
+    frame.AddWidget(new vkUI::uiLabel("Label seco\noge\nhogeh\nhafelaineh\noge"));
+    auto col = vkUI::uiCollapse("collapse test");
+    frame.AddWidget(&col);
+    col.AddWidget(new vkUI::uiButton("hoge", &hoge));
+    col.AddWidget(new vkUI::uiButton("huaga", &hoge));
+    col.AddWidget(new vkUI::uiLabel("Label seco\noge\nhogeh\nhafelaineh\noge"));
+    Vector3b a;
+    /* col.AddWidget(new vkUI::uiCol("L", &a)); */
+    /* col.AddWidget(new vkUI::uiCol2("Color", &a)); */
 
-    /* frame.AddWidget({vkUI::Widget::Button("main", &hoge), vkUI::Widget::Label("mai\naa\n15315afan"), vkUI::Widget::Label(""), vkUI::Widget::Label("Icon Tests = " + vkUI::Icon::FOLDER), */
-    /*                  vkUI::Widget::Slider("aaa", &huga, Vector2(0, 1000)), vkUI::Widget::DragVec3("aaa", &vec, Vector2(0, 1000)), */
-    /*                  vkUI::Widget::Table("aaa\tbbb\tccc\n123\r456\r789\naaa\rvvv\rhhh\naa\rhh\rX")}); */
+    frame.AddWidget({vkUI::Widget::Button("main", &hoge), vkUI::Widget::Label("mai\naa\n15315afan"), vkUI::Widget::Label(""), vkUI::Widget::Label("Icon Tests = " + vkUI::Icon::FOLDER),
+                     vkUI::Widget::Slider("aaa", &huga, Vector2(0, 1000)), vkUI::Widget::DragVec3("aaa", &vec, Vector2(0, 1000)),
+                     vkUI::Widget::Table("aaa\tbbb\tccc\n123\r456\r789\naaa\rvvv\rhhh\naa\rhh\rX")});
 
     auto frame2 = vkUI::uiFrame("plot");
     /* auto frame3 = vkUI::uiTextTexture(); */
@@ -84,12 +84,12 @@ int main() {
 
       wnd->drawDevelopperHelps();
 
-      for(int i=1; i<100; i++){
-        fps[i-1] = fps[i];
+      for(int i = 1; i < 100; i++) {
+        fps[i - 1] = fps[i];
       }
       fps[99] = wnd->getFPS();
 
-      if(plot.isActive()){
+      if(plot.isActive()) {
         plot.plotLine(fps, 100, {});
         plot.plotOther();
       }

@@ -922,7 +922,7 @@ void uiFrame::render() {
       if(flags.CollapsingTitlebar)
         wnd->AddArrowRight2D(pos + 2, title_bar - 5, style->col_Text);
       else
-        wnd->AddArrowDown2D(pos + title_bar / 3, title_bar * 0.8, style->col_Text);
+        wnd->AddArrowDown2D(pos + (int)(title_bar / 3), title_bar * 0.8, style->col_Text);
       const auto s = wnd->AddString2D(title, pos + Vector2d{title_bar + 3, 2}, 1, style->col_Text);
       wnd->AddCrossButton(pos + Vector2d{size[0] - title_bar + 1, 1}, title_bar - 2, style->col_WidgetBg, style->col_WidgetLine, style->col_Text);
       size[0] = std::max(s[0] + title_bar, size[0]);
@@ -1007,7 +1007,7 @@ void uiTextTexture::render() {
     if(flags.CollapsingTitlebar)
       wnd->AddArrowRight2D(pos + 2, title_bar - 5, style->col_Text);
     else
-      wnd->AddArrowDown2D(pos + title_bar / 3, title_bar * 0.8, style->col_Text);
+      wnd->AddArrowDown2D(pos + (int)(title_bar / 3), title_bar * 0.8, style->col_Text);
     const std::string title = "texture";
     const auto s = wnd->AddString2D(title, pos + Vector2d{title_bar + 3, 2}, 1, style->col_Text);
     wnd->AddCrossButton(pos + Vector2d{size[0] - title_bar + 1, 1}, title_bar - 2, style->col_WidgetBg, style->col_WidgetLine, style->col_Text);

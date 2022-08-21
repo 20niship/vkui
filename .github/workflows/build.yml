@@ -1,0 +1,26 @@
+name: build
+on:
+  push:
+    branches: [main]
+  pull_request:
+      paths-ignore:
+        - '.gitignore'
+        - 'LICENSE'
+        - '**.md'
+env:
+  BUILD_TYPE: Release
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: release build 
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install libraries
+        run: |
+          sudo apt update 
+          sudo apt install libgl-dev libxcursor-dev libxi-dev libxinerama-dev libxrandr-dev mesa-vulkan-drivers
+          sudo apt install libopencv-dev lcov ninja-build libx11-dev xorg-dev libglu1-mesa libgl1-mesa-glx libglu1-mesa-dev libgl1-mesa-dev libglfw3 libglfw3-dev libglew-dev libglm-dev libfreetype6-dev libeigen3-dev libassimp-dev libpcl-dev git libopenmpi-dev
+      - name: Configure CMake
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
