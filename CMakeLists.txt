@@ -104,9 +104,8 @@ include_directories(
   ${GLEW_INCLUDE_DIRS}
   ${stb_INCLUDE_DIRS}
   ${stb_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${cutil_SOURCE_DIR}/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/IconFontCppHeaders
-  ${CMAKE_SOURCE_DIR}/include
 )
 
 file(GLOB VKUI_SRC_FILES 
@@ -123,7 +122,6 @@ file(GLOB VK_SRC_FILES
   ${CMAKE_CURRENT_SOURCE_DIR}/src/vk/*.cpp 
   ${CMAKE_CURRENT_SOURCE_DIR}/src/vk/*.hpp 
 )
-
 
 if(RENDERER STREQUAL "WITH_VULKAN")
   set(VKUI_SRC_FILES ${VKUI_SRC_FILES} ${VK_SRC_FILES})
