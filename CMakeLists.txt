@@ -97,7 +97,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(stb cutil)
 
-include_directories(
+set(vkui_INCLUDE_DIRS GLOBAL
   ${OpenCV_INCLUDE_DIRS} 
   ${FREETYPE_INCLUDE_DIRS}
   ${Vulkan_INCLUDE_DIRS}
@@ -106,6 +106,10 @@ include_directories(
   ${stb_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${cutil_SOURCE_DIR}/include
+)
+
+include_directories(
+  ${vkui_INCLUDE_DIRS}
 )
 
 file(GLOB VKUI_SRC_FILES 
