@@ -3,10 +3,10 @@
 #include <vk/internal.hpp>
 namespace vkUI::Render{
 
-const auto get_device(){return Engine::getContextPtr()->renderer.get_device_ptr();}
-const auto get_command_pool(){return Engine::getContextPtr()->renderer.get_command_pool();}
-const auto get_graphicque(){return Engine::getContextPtr()->renderer.get_graphics_queue();}
-const auto get_physical_dev(){return Engine::getContextPtr()->renderer.get_physical_device_ptr();}
+const auto get_device(){return getContextPtr()->renderer.get_device_ptr();}
+const auto get_command_pool(){return getContextPtr()->renderer.get_command_pool();}
+const auto get_graphicque(){return getContextPtr()->renderer.get_graphics_queue();}
+const auto get_physical_dev(){return getContextPtr()->renderer.get_physical_device_ptr();}
 
 // -----------------------------------------------------
 //    [SECTION] uiBuffer
