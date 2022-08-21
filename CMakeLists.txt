@@ -90,7 +90,12 @@ FetchContent_Declare(
   GIT_REPOSITORY  https://github.com/nothings/stb.git
   GIT_TAG        origin/master
 )
-FetchContent_MakeAvailable(stb)
+FetchContent_Declare(
+  cutil 
+  GIT_REPOSITORY  https://github.com/20niship/cutil.git
+  GIT_TAG        origin/master
+)
+FetchContent_MakeAvailable(stb cutil)
 
 include_directories(
   ${OpenCV_INCLUDE_DIRS} 
@@ -98,9 +103,9 @@ include_directories(
   ${Vulkan_INCLUDE_DIRS}
   ${GLEW_INCLUDE_DIRS}
   ${stb_INCLUDE_DIRS}
-  ${FETCHCONTENT_BASE_DIR}/stb-src
+  ${stb_SOURCE_DIR}
+  ${cutil_SOURCE_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/IconFontCppHeaders
-  ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/cutil/include
   ${CMAKE_SOURCE_DIR}/include
 )
 
