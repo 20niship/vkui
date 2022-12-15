@@ -165,7 +165,7 @@ void uiLabel::render() {
     return;
   }
   if(flags.needRendering) {
-    const auto s = wnd->AddString2D(text, pos, 1, wnd->getClippingRect(), col);
+    const auto s = r->put_text(text, pos, 1, wnd->getClippingRect(), col);
     if(s != outerSize) {
       outerSize = s;
       impl_needCalcAlinment_parent();
@@ -203,7 +203,7 @@ void uiButton::render() {
       wnd->AddRectPosSize_clip(pos, size, flags.isHovering ? (style->col_WidgetBgHover) : (style->col_WidgetBgSelected));
     }
     wnd->AddRectPosSize_clip(pos, size, style->col_WidgetLine, 1);
-    const auto s = wnd->AddString2D(text, pos + style->WidgetPadding, 1, wnd->getClippingRect()) + style->WidgetPadding * 2;
+    const auto s = r->put_text(text, pos + style->WidgetPadding, 1, wnd->getClippingRect()) + style->WidgetPadding * 2;
     if(s != outerSize) {
       impl_needCalcAlinment_parent();
       outerSize = s;
@@ -237,7 +237,7 @@ void uiButtonFunc::render() {
     const auto style = getStyle();
     wnd->AddRectPosSize_clip(pos, size, style->col_WidgetBg);
     wnd->AddRectPosSize_clip(pos, size, style->col_WidgetLine, 1);
-    const auto s = wnd->AddString2D(text, pos + style->WidgetPadding, 1, wnd->getClippingRect()) + style->WidgetPadding * 2;
+    const auto s = r->put_text(text, pos + style->WidgetPadding, 1, wnd->getClippingRect()) + style->WidgetPadding * 2;
     if(s != outerSize) {
       impl_needCalcAlinment_parent();
       outerSize = s;
@@ -279,7 +279,7 @@ void uiCheckbox::render() {
   if(*value) {
     wnd->AddCheck2D(pos + Vector2d(0, ypad), checkbox_size, {255, 255, 255}, 2);
   }
-  const auto s = wnd->AddString2D(text, pos + style->WidgetPadding + Vector2d{checkbox_size, 0}, 1, wnd->getClippingRect()) + style->WidgetPadding * 2;
+  const auto s = r->put_text(text, pos + style->WidgetPadding + Vector2d{checkbox_size, 0}, 1, wnd->getClippingRect()) + style->WidgetPadding * 2;
   if(s != outerSize) {
     impl_needCalcAlinment_parent();
     outerSize = s;
@@ -321,7 +321,7 @@ template <typename T> void uiSliderH<T>::render() {
     wnd->AddRectPosSize({pos_x, pos[1]}, {10, size[1]}, {200, 55, 200});
     char tt[50];
     sprintf(tt, "%s : %0.5f", text.c_str(), (float)(*value)); // typename Tがintのときとかは%fではなく%dでしょ。あと桁数指定しようよ
-    const auto s = wnd->AddString2D(std::string(tt), pos + style->WidgetPadding, 1) + style->WidgetPadding * 2;
+    const auto s = r->put_text(std::string(tt), pos + style->WidgetPadding, 1) + style->WidgetPadding * 2;
     last_value = *value;
     if(s != outerSize) {
       impl_needCalcAlinment_parent();
@@ -379,7 +379,7 @@ template <typename T> void uiRange<T>::render() {
 
     char tt[70];
     sprintf(tt, "%s:%2.f - %2.f", text.c_str(), (float)(*value)[0], (float)(*value)[1]);
-    const auto s = wnd->AddString2D(std::string(tt), pos + style->WidgetPadding, 1) + style->WidgetPadding * 2;
+    const auto s = r->put_text(std::string(tt), pos + style->WidgetPadding, 1) + style->WidgetPadding * 2;
     last_value = *value;
     if(s != outerSize) {
       impl_needCalcAlinment_parent();
@@ -458,7 +458,7 @@ void uiMultiLine::render() {
   }
   if(flags.needRendering) {
     const auto cl_tmp = wnd->getClippingRect();
-    const auto s = wnd->AddString2D(text, pos - scrollPos, 1, uiRect(pos, size));
+    const auto s = r->put_text(text, pos - scrollPos, 1, uiRect(pos, size));
     if(s != outerSize) {
       outerSize = s;
       impl_needCalcAlinment_parent();
@@ -578,7 +578,7 @@ void uiTable::render() {
       if(columns.size() <= idx) break;
       const std::string& t = columns[idx];
       const Vector2d strPos = Vector2d{pos[0] + td_width * x, curHeight} + style->WidgetPadding / 2;
-      const auto ws = wnd->AddString2D(t, strPos, 1.0, col, td_width);
+      const auto ws = r->put_text(t, strPos, 1.0, col, td_width);
       dh_max = std::max<int>(dh_max, ws[1] + style->WidgetPadding[1]);
     }
     curHeight += dh_max;
@@ -620,7 +620,7 @@ template <typename T> void uiVector3<T>::render() {
   auto wnd = getDrawingWindow();
   const auto style = getStyle();
   if((*value != last_value) || (flags.needRendering)) {
-    const auto ss = wnd->AddString2D(text, pos + Vector2d{0, style->WidgetPadding[0]}, 1);
+    const auto ss = r->put_text(text, pos + Vector2d{0, style->WidgetPadding[0]}, 1);
     const Vector2d pos2(pos[0] + ss[0] + style->WidgetMargin[0], pos[1]);
     const Vector2d each_size((size[0] - pos2[0] + pos[0]) / 3 - 1, size[1]);
     _num_display_pos = pos2;
@@ -639,7 +639,7 @@ template <typename T> void uiVector3<T>::render() {
       } else {
         sprintf(tt, "%2.f", (float)(*value)[i]);
       }
-      const auto s = wnd->AddString2D(std::string(tt), pos3, 1) + style->WidgetPadding;
+      const auto s = r->put_text(std::string(tt), pos3, 1) + style->WidgetPadding;
       new_outer_size[0] = new_outer_size[0] + s[0];
       new_outer_size[1] = std::max(s[1], new_outer_size[1]);
       last_value = *value;
@@ -708,7 +708,7 @@ void uiCol::render() {
   const auto style = getStyle();
   if(*value == last_value && (!flags.needRendering)) return;
 
-  const auto ss = wnd->AddString2D(text, pos + Vector2d{0, style->WidgetPadding[0]}, 1);
+  const auto ss = r->put_text(text, pos + Vector2d{0, style->WidgetPadding[0]}, 1);
   const Vector2d pos2_{pos[0] + ss[0] + style->WidgetMargin[0], pos[1]};
   wnd->AddRectPosSize(pos2_, {size[1], size[1]}, *value);
   wnd->AddRectPosSize(pos2_, {size[1], size[1]}, style->col_WidgetLine, 1);
@@ -722,7 +722,7 @@ void uiCol::render() {
     const auto col = (i == selecting_idx) ? style->col_WidgetBg : style->col_WidgetBgHover;
     wnd->AddRectPosSize(pos3, each_size, col);
     wnd->AddRectPosSize(pos3, each_size, style->col_WidgetLine, 1);
-    const auto s = wnd->AddString2D(std::to_string((*value)[i]), pos3, 1) + style->WidgetPadding;
+    const auto s = r->put_text(std::to_string((*value)[i]), pos3, 1) + style->WidgetPadding;
     new_outer_size[0] = new_outer_size[0] + s[0];
     new_outer_size[1] = std::max(s[1], new_outer_size[1]);
     last_value = *value;
@@ -923,7 +923,7 @@ void uiFrame::render() {
         wnd->AddArrowRight2D(pos + 2, title_bar - 5, style->col_Text);
       else
         wnd->AddArrowDown2D(pos + title_bar / 3, title_bar * 0.8, style->col_Text);
-      const auto s = wnd->AddString2D(title, pos + Vector2d{title_bar + 3, 2}, 1, style->col_Text);
+      const auto s = r->put_text(title, pos + Vector2d{title_bar + 3, 2}, 1, style->col_Text);
       wnd->AddCrossButton(pos + Vector2d{size[0] - title_bar + 1, 1}, title_bar - 2, style->col_WidgetBg, style->col_WidgetLine, style->col_Text);
       size[0] = std::max(s[0] + title_bar, size[0]);
     }
@@ -1009,7 +1009,7 @@ void uiTextTexture::render() {
     else
       wnd->AddArrowDown2D(pos + title_bar / 3, title_bar * 0.8, style->col_Text);
     const std::string title = "texture";
-    const auto s = wnd->AddString2D(title, pos + Vector2d{title_bar + 3, 2}, 1, style->col_Text);
+    const auto s = r->put_text(title, pos + Vector2d{title_bar + 3, 2}, 1, style->col_Text);
     wnd->AddCrossButton(pos + Vector2d{size[0] - title_bar + 1, 1}, title_bar - 2, style->col_WidgetBg, style->col_WidgetLine, style->col_Text);
     size[0] = std::max(s[0] + title_bar, size[0]);
   }
@@ -1061,7 +1061,7 @@ void uiCollapse::render() {
   } else {
     wnd->AddArrowDown2D(pos + title_bar / 3.0f, title_bar * 0.8, style->col_Text);
   }
-  const auto s = wnd->AddString2D(title, pos + Vector2d{title_bar + 3, 2}, 1, style->col_Text);
+  const auto s = r->put_text(title, pos + Vector2d{title_bar + 3, 2}, 1, style->col_Text);
   whole_size = Vector2d{s[0] + title_bar, s[1]} + style->WidgetMargin;
   if(!flags.CollapsingTitlebar) {
     for(uint16_t i = 0; i < widgets.size(); i++) {

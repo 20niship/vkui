@@ -657,7 +657,6 @@ Vector2d uiWindow::AddString2D(const std::string& str, const Vector2d& pos, cons
 
 void uiWindow::terminate() {
   glfwDestroyWindow(window);
-  glfwSwapBuffers(window);
   glfwPollEvents();
 }
 
