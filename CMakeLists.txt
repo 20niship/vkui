@@ -135,23 +135,24 @@ include_directories(
   ${GLEW_INCLUDE_DIRS}
   ${stb_INCLUDE_DIRS}
   ${stb_SOURCE_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/vkui
   ${cutil_SOURCE_DIR}/include
 )
 
 file(GLOB VKUI_SRC_FILES 
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp 
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/widget/*.cpp 
+  ${CMAKE_CURRENT_SOURCE_DIR}/vkui/*.cpp 
+  ${CMAKE_CURRENT_SOURCE_DIR}/vkui/widgets/*.cpp 
 )
 
 file(GLOB GL_SRC_FILES 
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/gl/*.cpp 
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/gl/*.hpp 
+  ${CMAKE_CURRENT_SOURCE_DIR}/vkui/gl/*.cpp 
+  ${CMAKE_CURRENT_SOURCE_DIR}/vkui/gl/*.hpp 
 )
 
 file(GLOB VK_SRC_FILES 
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/vk/*.cpp 
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/vk/*.hpp 
+  ${CMAKE_CURRENT_SOURCE_DIR}/vkui/vk/*.cpp 
+  ${CMAKE_CURRENT_SOURCE_DIR}/vkui/vk/*.hpp 
 )
 
 if(RENDERER STREQUAL "WITH_VULKAN")
