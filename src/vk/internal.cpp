@@ -521,7 +521,7 @@ void vkWndRender::createSurface(GLFWwindow* window) {
     uiLOGE << "failed to create window surface!";
     const char* description;
     int code = glfwGetError(&description);
-    std::cout << description << std::endl;
+    std::cout << code << "= " << description << std::endl;
     throw std::runtime_error("failed to create window surface!");
   }
   uiLOGI << "createSurface called";
@@ -1105,10 +1105,10 @@ void vkWndRender::createCommandBuffers(const DrawData* dd) {
     vk::Buffer vertexBuffers2[] = {vertexBuffer_ui.buf};
     commandBuffers[i].bindVertexBuffers(0, 1, vertexBuffers2, offsets);
 
-    for(auto&& d : dd->drawlist) {
+    // for(auto&& [[maybe_unused]]d : dd->drawlist) {
       /* commandBuffers[i].bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout_ui, d.tex_id, descriptorSet, nullptr); */
       commandBuffers[i].draw(static_cast<uint32_t>(dd->vertices_ui.size()), 1, 0, 0);
-    }
+    // }
     // for(int i=0; i<dd->vertices_ui.size(); i++){
     //     std::cout << dd->vertices_ui[i].pos[0] << ", " << vertices_ui[i].pos[1] << std::endl;
     // }
@@ -1305,11 +1305,11 @@ void vkWndRender::draw(DrawData* dd) {
     throw std::runtime_error("failed to present swap chain image!");
   }
 
-  /* if(resultPresent == vk::Result::eSuboptimalKHR || resultPresent == vk::Result::eSuboptimalKHR || framebufferResized) { */
-  /*   framebufferResized = false; */
-  /*   recreateSwapChain(); */
-  /*   return; */
-  /* } */
+  if(resultPresent == vk::Result::eSuboptimalKHR || resultPresent == vk::Result::eSuboptimalKHR ) { 
+    // framebufferResized = false; 
+    // recreateSwapChain(); 
+    return; 
+  }
 }
 
 } // namespace vkUI::Render

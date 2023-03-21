@@ -260,7 +260,7 @@ public:
   inline void __AddPointSizeZero(const Vector3& pos, const Vector3b& col) {
     dd.vertices.push_back(std::move(Render::Vertex(pos, col)));
   }
-  [[deprecated]] inline void __AddPointSizeZero(const Vector3& pos, const Vector3b& col, [[maybe_unused]] const Vector2& uv) {
+  [[deprecated]] inline void __AddPointSizeZero(const Vector3& , const Vector3b& , [[maybe_unused]] const Vector2& ) {
     /* dd.vertices.push_back(std::move(Vertex(pos, col))); */
   }
   inline void AddTriangle(const Vector3& pos1, const Vector3& pos2, const Vector3& pos3, const Vector3b& col1, const Vector3b& col2, const Vector3b& col3, const float width = -1) {

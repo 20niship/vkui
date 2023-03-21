@@ -39,7 +39,7 @@ uiWindow::uiWindow(std::string _name, uint16_t width, uint16_t height) {
   glfwSetCharCallback(window, charCB_static);
   glfwSetMouseButtonCallback(window, mouseButtonCB_static);
   currentFrame = 0;
-  user_key_cb = [](int a, int b, int c, int d, Vector2 f) { return true; };
+  user_key_cb = [](int , int , int , int , Vector2 ) { return true; };
   uiLOGI << "updateUniformBuffer";
   updateUniformBuffer();
   uiLOGI << "vertexbuffer";
@@ -123,7 +123,7 @@ void uiWindow::drawDevelopperHelps() {
   AddRectPosSize(focused->getPos(), focused->getSize(), {255, 0, 0}, 1);
 }
 
-void uiWindow::drawFrame(const bool verbose) {
+void uiWindow::drawFrame(const bool ) {
   setDrawingWindow(this);
   updateUniformBuffer();
   dd.push();
@@ -471,7 +471,7 @@ void uiWindow::AddCross(const Vector3& pos, const int n, const Vector3b col) {
   AddLine(pos - Vector3(0, n, 0), pos + Vector3(0, n, 0), col, w);
   AddLine(pos - Vector3(0, 0, n), pos + Vector3(0, 0, n), col, w);
 }
-void uiWindow::AddCoord(const Vector3& pos, const Vector3& axis, const int n) {
+void uiWindow::AddCoord(const Vector3& pos, const Vector3& , const int n) {
   const auto w = std::max<int>(n / 10, 2);
   AddLine(pos, pos + Vector3(n, 0, 0), {0, 0, 255}, w);
   AddLine(pos, pos + Vector3(0, n, 0), {0, 255, 0}, w);

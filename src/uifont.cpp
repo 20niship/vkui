@@ -7,10 +7,10 @@ namespace vkUI{
 // -----------------------------------------------------
 //    [SECTION] uiFont
 // -----------------------------------------------------
-void uiFont::AddGlyph(uiWchar c, float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1, float advance_x) {}
-void uiFont::AddRemapChar(uiWchar dst, uiWchar src, bool overwrite_dst) {}
-void uiFont::SetGlyphVisible(uiWchar c, bool visible) {}
-bool uiFont::IsGlyphRangeUnused(unsigned int c_begin, unsigned int c_last) {
+void uiFont::AddGlyph(uiWchar , float , float , float , float , float , float , float , float , float ) {}
+void uiFont::AddRemapChar(uiWchar , uiWchar , bool ) {}
+void uiFont::SetGlyphVisible(uiWchar , bool ) {}
+bool uiFont::IsGlyphRangeUnused(unsigned int , unsigned int ) {
   return true;
 }
 
@@ -171,7 +171,6 @@ bool uiFont::build_internal(const std::string& fontname, const int fontsize, con
       w = (slot->bitmap).width;
       h = (slot->bitmap).rows;
 
-      const int max_font_size = 30;
       if(w > 30 || h > 30) {
         std::stringstream ss;
         ss << "Font size too large!" << w << " , " << h << " at " << fontname << " " << n << " -- > 0x" << std::hex << GlyphRange[n];

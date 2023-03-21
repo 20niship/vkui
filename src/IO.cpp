@@ -23,9 +23,9 @@ void vkIO::resizeCB(int w, int h) {
 
 void mouseCB(double x, double y);
 
-void vkIO::charCB(unsigned int codepoint) {}
+void vkIO::charCB(unsigned int) {}
 
-void vkIO::keyboardCB(int key, int scancode, int action, int mods) {
+void vkIO::keyboardCB(int, int, int, int) {
   // if (key == GLFW_KEY_W && action == GLFW_PRESS){ camera_position.pos[2]+= 0.1; }
   // if (key == GLFW_KEY_S && action == GLFW_PRESS){ camera_position.pos[2]-= 0.1; }
   // if (key == GLFW_KEY_A && action == GLFW_PRESS){ camera_position.pos[0]+= 0.1; }
@@ -48,15 +48,15 @@ void vkIO::mouseBtnCB(int button, int action, [[maybe_unused]] int mods) {
 
   if(action == GLFW_RELEASE) {
     switch(button) {
-      case GLFW_MOUSE_BUTTON_RIGHT:  break;
-      case GLFW_MOUSE_BUTTON_LEFT:  break;
+      case GLFW_MOUSE_BUTTON_RIGHT: break;
+      case GLFW_MOUSE_BUTTON_LEFT: break;
       case GLFW_MOUSE_BUTTON_MIDDLE: break;
       default: MY_ASSERT("undefinded mouse button!\n");
     }
   } else {
     switch(button) {
       case GLFW_MOUSE_BUTTON_RIGHT: break;
-      case GLFW_MOUSE_BUTTON_LEFT:  break;
+      case GLFW_MOUSE_BUTTON_LEFT: break;
       case GLFW_MOUSE_BUTTON_MIDDLE: break;
       default: MY_ASSERT("undefinded mouse button!\n");
     }

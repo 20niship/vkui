@@ -86,7 +86,7 @@ struct log_intermediate {
     
     
     log_intermediate( log_intermediate&& a )
-      : buffer( move( a.buffer ) )
+      : buffer( std::move( a.buffer ) )
       , prefix( a.prefix )
       , suffix( a.suffix )
       , source( a.source )

@@ -24,6 +24,37 @@ else()
   set(CMAKE_CXX_FLAGS "-O2 -g ${CMAKE_CXX_FLAGS}")
 endif()
 
+set(
+  CXX_WARNING_FLAGS
+  -Wall
+  -Wextra
+  -Wdisabled-optimization
+  -Wformat
+  -Winit-self
+  -Woverloaded-virtual
+  -Wno-old-style-cast
+  -Wno-ignored-attributes
+  -Wno-missing-field-initializers
+  -Wno-deprecated
+  -Wno-narrowing
+  -Wno-c++11-narrowing
+  -Werror
+)
+
+option(NO_WARNING "if ON, Disables all g++/gcc warnings" OFF)
+if(NO_WARNING)
+  message("すべてのWarningを表示しません")
+  set(CXX_WARNING_FLAGS -w)
+endif()
+
+foreach(FLAG IN LISTS CXX_WARNING_FLAGS)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG}")
+endforeach()
+
+if(${CMAKE_CXX_COMPILER_VERSION} VERSION_GREATER "9.0.0")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-copy")
+endif()
+
 message("Compiler:\n\t${CMAKE_CXX_COMPILER}")
 message("compiler flags:\n\t${CMAKE_CXX_FLAGS}")
 

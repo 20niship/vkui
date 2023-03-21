@@ -42,7 +42,6 @@ public:
 class uiButtonFunc : public uiWidget{
 private:
   std::function<void(void)> func;
-	bool last_value;
   std::string text;
 public:
 	uiButtonFunc() = delete;
@@ -109,7 +108,6 @@ private:
   std::vector<std::string> columns;
   int cols;
   Vector3b col{255,255,255};
-	bool value_changed{true};
 public:
 	uiTable() = delete;
 	uiTable(const uiTable&) = delete;
@@ -170,8 +168,6 @@ private:
   Vector3 hsv;
   Vector3b last_value;
 	std::string text;
-	int selecting_idx{-1};
-  int start_mouse_pos_x;
 	Vector2d _num_display_pos{0, 0};
 	Vector3 start_mouse_val;
 	// float last_value, min_value, max_value, delta_value;

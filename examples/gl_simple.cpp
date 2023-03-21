@@ -9,8 +9,6 @@ int main() {
     bool loop = true;
     while(loop) {
       wnd->updateVertexBuffer();
-      const auto fw = vkUI::getTextRendererPtr()->TexWidth;
-      const auto fh = vkUI::getTextRendererPtr()->TexHeight;
       wnd->drawDevelopperHelps();
       loop = vkUI::render();
       std::this_thread::sleep_for(std::chrono::milliseconds(100));

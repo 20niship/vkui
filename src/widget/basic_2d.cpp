@@ -597,7 +597,7 @@ void uiTable::render() {
   needRendering(false);
 }
 
-bool uiTable::CallbackFunc(uiCallbackFlags flag, Vector2d vec2_1, int num_1, int num_2, const char** strings) {
+bool uiTable::CallbackFunc(uiCallbackFlags , Vector2d , int , int , const char** ) {
   return false;
 }
 
@@ -846,10 +846,7 @@ bool uiCol2::CallbackFunc(uiCallbackFlags flag, Vector2d vec2_1, [[maybe_unused]
   const Vector2d col1_top = pos + style->WidgetPadding;
   const Vector2d col1_size(w - bar_color - style->WidgetPadding[0]*2, w);
 
-  const Vector2d col2_top = pos + Vector2d(w - bar_color, 0);
   const Vector2d col2_size(bar_color, w);
-
-  constexpr int sp = 30;
 
   if(flag != vkUI::uiCallbackFlags::MouseMove) return false;
   if(num_2 != 0b01) return false;
