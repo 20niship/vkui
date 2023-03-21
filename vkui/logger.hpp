@@ -123,7 +123,7 @@ struct log_intermediate {
     ~log_intermediate() noexcept {
       try{ 
         // Get epoch time
-        auto ret = clock_gettime(CLOCK_REALTIME, &ts);
+        [[maybe_unused]]auto ret = clock_gettime(CLOCK_REALTIME, &ts);
         assert( ret >= 0);
         // localtime_r(&ts.tv_sec, &t);
         time_t tt;
